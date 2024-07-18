@@ -108,3 +108,8 @@ static async Task CheckDbConnection(string connectionString, HealthCheckService 
     await command.ExecuteNonQueryAsync(cancellationToken);
     await connection.CloseAsync();
 }
+
+static void TestMethod()
+{
+    Console.WriteLine("This is a push rulez test method");
+}
