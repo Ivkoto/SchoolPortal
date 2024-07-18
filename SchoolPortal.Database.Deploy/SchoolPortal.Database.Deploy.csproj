@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="dbup-sqlserver" Version="5.0.40" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+		<PackageReference Include="Serilog.Sinks.Datadog.Logs" Version="0.5.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.System.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<DependentUpon>appsettings.json</DependentUpon>
+		</Content>
+		<Content Include="..\DataFiles_Resources\**">
+				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+				<Link>Resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Scripts\**">
+		</EmbeddedResource>
+		<EmbeddedResource Include="AlwaysRunScripts\**">
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="appsettings.System.json" />
+		<None Remove="Scripts\**" />
+		<None Remove="AlwaysRunScripts\**" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,14 @@
+[Dd]ebug/
+[Rr]elease/
+build/
+packages/
+[Bb]in/
+[Oo]bj/
+.vs/
+.vscode/
+*.tmp
+*.orig
+*.suo
+*.sln.cache
+*.user
+*.sql.design
