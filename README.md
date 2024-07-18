@@ -1,7 +1,1 @@
-# Introduction 
-
-# Getting Started
-
-# Build and Test
-
-# Contribute
+### The School portal info will be here soon...
