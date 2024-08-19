@@ -1,0 +1,130 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - SchoolPortal.Database.Deploy/*
+    - SchoolPortal.Database.Deploy.OLD/*
+    - azure-api-pipeline.yaml
+    - azure-db-pipeline.yaml
+    - README.md
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: azure-sql-variables
+  - name: BuildConfiguration
+    value: 'Release'
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndTest
+        steps:
+
+        - task: UseDotNet@2
+          displayName: Use dot net 8
+          inputs:
+            version: '8.x'        
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Publish SchoolPortal.Api'
+          inputs:
+            command: publish
+            publishWebProjects: false
+            projects: SchoolPortal.Api/SchoolPortal.Api.csproj
+            arguments: '--configuration $(BuildConfiguration) --output "$(build.artifactstagingdirectory)/Api"'
+            modifyOutputPath: false
+            zipAfterPublish: false
+
+        - task: ArchiveFiles@2
+          displayName: Archive files
+          inputs:
+            rootFolderOrFile: $(Build.ArtifactStagingDirectory)/Api
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile: $(Build.ArtifactStagingDirectory)/build.zip
+            replaceExistingArchive: true
+
+        - task: PublishPipelineArtifact@1
+          displayName: Publish build artifact
+          inputs:
+            targetPath: $(Build.ArtifactStagingDirectory)/build.zip
+            publishLocation: 'pipeline'
+            artifact: buildArtifact
+
+  - stage: DeployToDev
+    dependsOn: Build
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+    variables:
+      ConnectionStrings.DatabaseConnection: 'Server=tcp:$(sqlurl),1433;Initial Catalog=SchoolPortalDev;Persist Security Info=False;User ID=$(sqldevuser);Password=$(sqldevpass);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+    jobs:
+    - job: DeployToDevAzureAppService
+      steps:
+
+        - task: DownloadPipelineArtifact@2
+          displayName: Download build artifact
+          inputs:
+            artifact: buildArtifact
+            path: $(Pipeline.Workspace)/build
+
+        # Update appsettings.json via FileTransform task.
+        - task: FileTransform@1
+          displayName: 'File transformation: appsettings.json'
+          inputs:
+            folderPath: '$(Pipeline.Workspace)/build/build.zip'
+            targetFiles: '**/appsettings.json'
+            fileType: json
+
+        - task: AzureRmWebAppDeployment@4
+          displayName: Deploy to Dev Azure App Service
+          inputs:
+            connectionType: AzureRM
+            azureSubscription: SchoolPortalAPI
+            resourceGroupName: SchoolPortalApi
+            appType: webAppLinux
+            webAppName: eduapi
+            packageForLinux: $(Pipeline.Workspace)/build/build.zip
+            deployToSlotOrASE: true
+            slotName: dev
+
+  - stage: DeployToProd
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+    variables:
+      Serilog.MinimumLevel.Override.Microsoft: Debug
+      ConnectionStrings.DatabaseConnection: 'Server=tcp:$(sqlurl),1433;Initial Catalog=SchoolPortal;Persist Security Info=False;User ID=$(sqlproduser);Password=$(sqlprodpass);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+    jobs:
+    - job: DeployToProdAzureAppService
+      steps:
+
+        - task: DownloadPipelineArtifact@2
+          displayName: Download build artifact
+          inputs:
+            artifact: buildArtifact
+            path: $(Pipeline.Workspace)/build
+
+        # Update appsettings.json via FileTransform task.
+        - task: FileTransform@1
+          displayName: 'File transformation: appsettings.json'
+          inputs:
+            folderPath: '$(Pipeline.Workspace)/build/build.zip'
+            targetFiles: '**/appsettings.json'
+            fileType: json
+
+        - task: AzureRmWebAppDeployment@4
+          displayName: Deploy to Prod Azure App Service
+          inputs:
+            connectionType: AzureRM
+            azureSubscription: SchoolPortalAPI
+            resourceGroupName: SchoolPortalApi
+            appType: webAppLinux
+            webAppName: eduapi
+            packageForLinux: $(Pipeline.Workspace)/build/build.zip
+            # AppSettings: -Serilog__MinimumLevel__Default "Error"

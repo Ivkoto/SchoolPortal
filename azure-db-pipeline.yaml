@@ -1,0 +1,107 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - SchoolPortal.Api/*
+    - SchoolPortal.Database.Deploy.OLD/*
+    - azure-api-pipeline.yaml
+    - azure-db-pipeline.yaml
+    - README.md
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: azure-sql-variables
+  - name: BuildConfiguration
+    value: 'Release'
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildAndTest
+        steps:
+
+        - task: UseDotNet@2
+          displayName: Use dot net 8
+          inputs:
+            version: '8.x'        
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Publish SchoolPortal.Database.Deploy'
+          inputs:
+            command: publish
+            publishWebProjects: false
+            projects: SchoolPortal.Database.Deploy/SchoolPortal.Database.Deploy.csproj
+            arguments: '--configuration $(BuildConfiguration) --output "$(build.artifactstagingdirectory)/DB"'
+            modifyOutputPath: false
+            zipAfterPublish: false
+
+        - task: PublishPipelineArtifact@1
+          displayName: Publish build artifact
+          inputs:
+            targetPath: $(build.artifactstagingdirectory)/DB
+            publishLocation: 'pipeline'
+            artifact: buildArtifact
+
+  - stage: DeployToDev
+    dependsOn: Build
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+    variables:
+      ConnectionStrings.DatabaseConnection: 'Server=tcp:$(sqlurl),1433;Initial Catalog=SchoolPortalDev;Persist Security Info=False;User ID=$(sqlmaster);Password=$(sqlmasterpass);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      Environment: 'Deployment'
+
+    jobs:
+    - job: DeployToDevAzureSqlDB
+      steps:
+
+        - task: DownloadPipelineArtifact@2
+          displayName: Download build artifact
+          inputs:
+            artifact: buildArtifact
+            path: $(Pipeline.Workspace)/DBdev
+
+        # Update appsettings.json via FileTransform task.
+        - task: FileTransform@1
+          displayName: 'File transformation: appsettings.json'
+          inputs:
+            folderPath: '$(Pipeline.Workspace)/DBdev'
+            targetFiles: '**/appsettings.json'
+            fileType: json
+
+        - script: 'dotnet SchoolPortal.Database.Deploy.dll'
+          workingDirectory: '$(Pipeline.Workspace)/DBdev'
+          displayName: 'Deploy DB to Dev'
+
+  - stage: DeployToProd
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+    variables:
+      ConnectionStrings.DatabaseConnection: 'Server=tcp:$(sqlurl),1433;Initial Catalog=SchoolPortal;Persist Security Info=False;User ID=$(sqlmaster);Password=$(sqlmasterpass);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      Environment: 'Deployment'
+
+    jobs:
+    - job: DeployToProdAzureSqlDB
+      steps:
+
+        - task: DownloadPipelineArtifact@2
+          displayName: Download build artifact
+          inputs:
+            artifact: buildArtifact
+            path: $(Pipeline.Workspace)/DB
+
+        # Update appsettings.json via FileTransform task.
+        - task: FileTransform@1
+          displayName: 'File transformation: appsettings.json'
+          inputs:
+            folderPath: '$(Pipeline.Workspace)/DB'
+            targetFiles: '**/appsettings.json'
+            fileType: json
+
+        - script: 'dotnet SchoolPortal.Database.Deploy.dll'
+          workingDirectory: '$(Pipeline.Workspace)/DB'
+          displayName: 'Deploy DB to Prod'

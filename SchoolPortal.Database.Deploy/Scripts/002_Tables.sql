@@ -9,15 +9,16 @@
 );
 GO
 
-CREATE TABLE [Application].[Address] --(квартал "К",) улица "У", номер Н, ...
+CREATE TABLE [Application].[Address] -- (квартал "К",) улица "У", номер Н, ...
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
     [Area] NVARCHAR(100),
     [Municipality] NVARCHAR(100),
+    [Region] NVARCHAR(100), -- Банкя, Витоша, Възраждане,..
     [Settlement] NVARCHAR(100),
-    [Region] NVARCHAR(100), --Банкя,Витоша,Възраждане,..
-    [Address] NVARCHAR(1000), -- (Седалище и управление)
-    [PostalCode] INT, --(Дейност)
+    [Neighbourhood] NVARCHAR(100), -- Люлин 1, Младост 2,..
+    [Address] NVARCHAR(1000), -- улица, номер
+    [PostalCode] INT, -- (Дейност)
 	[Latitude] DECIMAL(17,15),
 	[Longitude] DECIMAL(18,15),
 
@@ -59,7 +60,7 @@ CREATE TABLE [Application].[Science]
 (
 	[Id] INT NOT NULL IDENTITY (1, 1),
 	[ExternalId] INT NOT NULL,
-    [Name] NVARCHAR(300), --Изкуства, Хуманитарни науки, Информатика...
+    [Name] NVARCHAR(300), -- Изкуства, Хуманитарни науки, Информатика...
 
 	CONSTRAINT [PK_Science_Id] PRIMARY KEY CLUSTERED ([Id]),
 	CONSTRAINT [UQ_Science_ExternalId] UNIQUE ([ExternalId])
@@ -118,7 +119,7 @@ CREATE TABLE [Application].[Institution]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
     [ExternalId] INT NOT NULL,
-    [IsActive] BIT DEFAULT 1, --true/false
+    [IsActive] BIT DEFAULT 1, -- true/false
     [EIK] NVARCHAR (15), -- 000012465 / BG000012465
     [FullName] NVARCHAR(300), -- Софийска математическа гимназия "Паисий Хилендарски"
     [ShortName] NVARCHAR(300), -- СМГ "П. Хилендарски"
@@ -146,9 +147,9 @@ CREATE TABLE [Application].[SubInstitution]
     [Id] INT NOT NULL IDENTITY (1, 1),
     [Kind] NVARCHAR(300), -- (вид по законова уредба?) Вид по чл. 38 (детайлен) "основно","професионална гимназия","средно", "основно (І - VІІІ клас)",...
     [Director] NVARCHAR(300), -- Елена Владимирова Гюмова
-    [Websites] NVARCHAR(1000), --keep them as a string with some separator between them
-    [Emails] NVARCHAR(1000), --keep them as a string with some separator between them
-    [PhoneNumbers] NVARCHAR(1000),  --keep them as a string with some separator between them
+    [Websites] NVARCHAR(1000), -- keep them as a string with some separator between them
+    [Emails] NVARCHAR(1000), -- keep them as a string with some separator between them
+    [PhoneNumbers] NVARCHAR(1000),  -- keep them as a string with some separator between them
 
     [InstitutionId] INT NOT NULL,
     [AddressOfActivityId] INT,
@@ -168,7 +169,7 @@ CREATE TABLE [Application].[Profile]
 	[Name] NVARCHAR(300),
 	[Type] NVARCHAR(100), -- професионална, профилирана, ...
 	[Grade] INT, -- Отнася се за кандидатстване за клас: 5/8/12
-	[StudyPeriod] INT,
+	[StudyPeriod] NVARCHAR(15),
 
 	[SubInstitutionId] INT NOT NULL,
 
@@ -182,7 +183,7 @@ CREATE TABLE [Application].[ProfessionalDirection]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
 	[ExternalId] INT NOT NULL,
-    [Name] NVARCHAR(300), --Изящни изкуства, Музикални и сценични изкуства, ...
+    [Name] NVARCHAR(300), -- Изящни изкуства, Музикални и сценични изкуства, ...
 
 	[ScienceId] INT,
 
@@ -196,7 +197,7 @@ CREATE TABLE [Application].[Profession]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
 	[ExternalId] INT NOT NULL,
-    [Name] NVARCHAR(300), --Художник – изящни изкуства, Музикант- инструменталист
+    [Name] NVARCHAR(300), -- Художник – изящни изкуства, Музикант- инструменталист
 
 	[ProfessionalDirectionId] INT,
 
@@ -210,8 +211,10 @@ CREATE TABLE [Application].[Specialty]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
 	[ExternalId] INT NOT NULL,
-    [Name] NVARCHAR(300), --Живопис, Стенопис, Графика, Скулптура
-	[ProfessionalQualificationLevel] INT, --I/1/първа, II/2/втора, III/3/трета, IV/4
+    [Name] NVARCHAR(300), -- Живопис, Стенопис, Графика, Скулптура
+	[ProfessionalQualificationLevel] INT, -- I/1/първа, II/2/втора, III/3/трета, IV/4
+    [IsProtected] BIT DEFAULT 0,
+    [HasExpectedShortage] BIT DEFAULT 0,
 	[Description] NVARCHAR(300),
 
     [ProfessionId] INT
@@ -225,15 +228,15 @@ GO
 CREATE TABLE [Application].[ProfileDetails]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-	[GradingFormulas] NVARCHAR(1000), --(2*БЕЛ+2*МАТ)+(1*БЗО+1*ХООС)
-	[StudyMethod] NVARCHAR(100), --разширено/интензивно/нито едно от двете
-	[EducatingType] NVARCHAR(100), --дневна, дуална, ...
+	[GradingFormulas] NVARCHAR(1000), -- (2*БЕЛ+2*МАТ)+(1*БЗО+1*ХООС)
+	[StudyMethod] NVARCHAR(100), -- разширено/интензивно/нито едно от двете
+	[EducatingType] NVARCHAR(100), -- дневна, дуална, ...
 	[ClassesCount] DECIMAL(4, 2),
 	[FirstForeignLanguage] NVARCHAR(100),
 
 	[ProfileId] INT NOT NULL,
 	[SchoolYearId] INT,
-	[AdmissionByQuotasId] INT,
+	[AdmissionByQuotasId] INT, -- TODO more than one AdmissionByQuotasId or new property IsChildrenCountVaries
 	[SpecialtyId] INT,
 
 	CONSTRAINT [PK_ProfileDetails_Id] PRIMARY KEY CLUSTERED ([Id]),
@@ -320,7 +323,7 @@ GO
 CREATE TABLE [Application].[StudentSubjectResult]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-    [Result] DECIMAL(1,1),
+    [Result] DECIMAL(2,1), -- TODO set right precision
 	[Grade] INT CHECK ([Grade] BETWEEN 1 AND 2),
 	[PersonalSubjectId] INT NOT NULL,
 

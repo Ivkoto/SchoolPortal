@@ -8,16 +8,26 @@
   </PropertyGroup>
 
 	<ItemGroup>
-			<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
+			<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+			<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 			<PackageReference Include="Serilog" Version="4.0.0" />
 			<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 			<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-			<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+			<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 			<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <None Remove="wwwroot\index.html" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="MockData\Professions.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\ProfessionalDirections.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\Profiles.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\Sciences.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\Specialties.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\StudyPeriods.json" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>
