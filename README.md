@@ -1,1 +1,7 @@
-### The School portal info will be here soon...
+# Introduction 
+
+# Getting Started
+
+# Build and Test
+
+# Contribute
