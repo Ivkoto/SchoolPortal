@@ -30,23 +30,16 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<DependentUpon>appsettings.json</DependentUpon>
 		</Content>
-		<Content Include="..\DataFiles_Resources\**">
-				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-				<Link>Resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
-		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="Scripts\**">
-		</EmbeddedResource>
-		<EmbeddedResource Include="AlwaysRunScripts\**">
 		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="appsettings.System.json" />
 		<None Remove="Scripts\**" />
-		<None Remove="AlwaysRunScripts\**" />
 	</ItemGroup>
 
 </Project>
