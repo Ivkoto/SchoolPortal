@@ -1,12 +1,11 @@
-﻿using System.Net.NetworkInformation;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace SchoolPortal.Api.Services
 {
     public interface IApiHealthCheckRepository
     {
-        Task<object> Ping();
+        Task<IResult> Ping(CancellationToken cancellationToken);
         Task<IResult> PingDetails(CancellationToken cancellationToken);
     }
 
@@ -23,20 +22,14 @@ namespace SchoolPortal.Api.Services
             this.healthCheckService = healthCheckService;
         }
 
-        public async Task<object> Ping()
+        public async Task<IResult> Ping(CancellationToken cancellationToken)
         {
             const string successMessage = "Connection to the API established.";
 
             var healthReport = await healthCheckService.CheckHealthAsync();
-            var result = new
-            {
-                Status = healthReport.Status.ToString(),
-                Results = healthReport.Entries.Select(e => new { key = e.Key, value = e.Value.Status.ToString() })
-            };
 
             logger.Information(successMessage);
-
-            return result;
+            return Results.Ok(successMessage);
         }
 
         public async Task<IResult> PingDetails(CancellationToken cancellationToken)

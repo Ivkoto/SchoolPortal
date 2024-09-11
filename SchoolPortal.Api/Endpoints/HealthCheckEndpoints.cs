@@ -10,9 +10,9 @@ namespace SchoolPortal.Api.Endpoints
             app.MapGet("/ping/details", PingDetails);
         }
 
-        internal async Task Ping(IApiHealthCheckRepository service)
+        internal async Task<IResult> Ping(IApiHealthCheckRepository service, CancellationToken cancellationToken)
         {
-            await service.Ping();
+            return await service.Ping(cancellationToken);
         }
 
         internal async Task<IResult> PingDetails(IApiHealthCheckRepository service, CancellationToken cancellationToken)
