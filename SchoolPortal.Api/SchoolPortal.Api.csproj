@@ -22,12 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="MockData\Professions.json" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="MockData\ProfessionalDirections.json" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="MockData\Profiles.json" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="MockData\Sciences.json" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="MockData\Specialties.json" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="MockData\StudyPeriods.json" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="MockData\**\*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>
