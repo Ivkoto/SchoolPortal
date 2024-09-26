@@ -1,51 +1,52 @@
 ﻿using System.Text;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
+using SchoolPortal.Api.Validation;
 
 namespace SchoolPortal.Api.Endpoints
 {
-    public class ProfileEndpoints : IEndpoint
+    public class Profiles : IEndpoint
     {
         public void MapEndpoints(WebApplication app)
         {
-            app.MapGet("/Profiles/SearchProfiles", GetFilteredProfiles)
-               .WithName("SearchProfiles")
-               .Produces<IEnumerable<ProfileModel>>(StatusCodes.Status200OK);
+            app.MapPost("/profiles/lookup", GetFilteredProfiles)
+               .WithName("GetProfiles")
+               .Produces<LookupProfilesResponse>(StatusCodes.Status200OK);
 
-            //Result from Mock Data
-            app.MapGet("/Profiles/Filters/SearchGrades", GetGrades);
-            app.MapGet("/Profiles/Filters/SearchProfessionalDirections", GetProfessionalDirections);
-            app.MapGet("/Profiles/Filters/SearchProfessions", GetProfessions);
-            app.MapGet("/Profiles/Filters/SearchProfileTypes", GetProfileTypes);
-            app.MapGet("/Profiles/Filters/SearchSciences", GetSciences);
-            app.MapGet("/Profiles/Filters/SearchSpecialties", GetSpecialties);
+            app.MapGet("/profiles/sciences", GetSciences);
+
+            //Results from Mock Data
+            app.MapGet("/profiles/grades", GetGrades);
+            app.MapGet("/profiles/professional-directions", GetProfessionalDirections);
+            app.MapGet("/profiles/professions", GetProfessions);
+            app.MapGet("/profiles/profile-types", GetProfileTypes);
+            app.MapGet("/profiles/specialties", GetSpecialties);
         }
-
+            
         internal async Task<IResult> GetFilteredProfiles(
-            [FromQuery] int? SchoolYear,
-            [FromQuery] int? Grade,
-            [FromQuery] int? SpecialtyId,
-            [FromQuery] int? ProfessionId,
-            [FromQuery] int? ProfessionalDirectionId,
-            [FromQuery] int? ScienceId,
-            [FromServices] IProfileRepository service,
-            CancellationToken cancellationToken)
+            [FromBody] LookupProfilesRequest filters, [FromServices] IProfileRepository service,
+            IValidator<GeoLocationRequest> validator, CancellationToken cancellationToken)
         {
-            var filters = new ProfileFilterModel
+            if (filters.GeoLocationFilter is not null)
             {
-                SchoolYear = SchoolYear,
-                Grade = Grade,
-                SpecialtyId = SpecialtyId,
-                ProfessionId = ProfessionId,
-                ProfessionalDirectionId = ProfessionalDirectionId,
-                ScienceId = ScienceId
-            };
+                var validationResult = await validator.ValidateAsync(filters.GeoLocationFilter, cancellationToken);
+
+                if (!validationResult.IsValid)
+                {
+                    return Results.ValidationProblem(validationResult.ToDictionary());
+                }
+            }
 
             var profiles = await service.GetFilteredProfiles(filters, cancellationToken);
 
-            return Results.Ok(profiles);
+            return Results.Ok(new LookupProfilesResponse
+            {
+                ProfileCount = profiles.Count,
+                Profiles = profiles
+            });
         }
 
         internal async Task<IEnumerable<string>> GetGrades()
@@ -133,6 +134,7 @@ namespace SchoolPortal.Api.Endpoints
         public void MapServices(IServiceCollection services)
         {
             services.AddSingleton<IProfileRepository, ProfileRepository>();
+            services.AddScoped<IValidator<GeoLocationRequest>, GeoLocationValidator>();
         }
     }
 }

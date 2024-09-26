@@ -6,7 +6,7 @@ namespace SchoolPortal.Api.Repositories
 {
     public interface IProfileRepository
     {
-        Task<IEnumerable<ProfileModel>> GetFilteredProfiles(ProfileFilterModel filters, CancellationToken cancellationToken);
+        Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters, CancellationToken cancellationToken);
     }
     public class ProfileRepository : IProfileRepository
     {
@@ -18,7 +18,8 @@ namespace SchoolPortal.Api.Repositories
             this.configuration = configuration;
             this.logger = logger;
         }
-        public async Task<IEnumerable<ProfileModel>> GetFilteredProfiles(ProfileFilterModel filters, CancellationToken cancellationToken)
+
+        public async Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters, CancellationToken cancellationToken)
         {
             var connectionString = configuration.GetConnectionString("DatabaseConnection");
             var profiles = new List<ProfileModel>();
@@ -26,17 +27,44 @@ namespace SchoolPortal.Api.Repositories
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
 
-            using var command = new SqlCommand("[Application].[GetFilteredProfiles]", connection)
+            using var command = new SqlCommand("[Application].[usp_GetFilteredProfiles]", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
 
+            command.Parameters.Add(new SqlParameter("@Area", SqlDbType.NVarChar)
+            {
+                Value = filters.Area ?? (object)DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@Settlement", SqlDbType.NVarChar)
+            {
+                Value = filters.Settlement ?? (object)DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@Region", SqlDbType.NVarChar)
+            {
+                Value = filters.Region ?? (object)DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@Neighbourhood", SqlDbType.NVarChar)
+            {
+                Value = filters.Neighbourhood ?? (object)DBNull.Value
+            });
             command.Parameters.AddWithValue("@SchoolYear", filters.SchoolYear ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("@Grade", filters.Grade ?? (object)DBNull.Value);
+            command.Parameters.Add(new SqlParameter("@ProfileType", SqlDbType.NVarChar)
+            {
+                Value = filters.ProfileType ?? (object)DBNull.Value
+            });
             command.Parameters.AddWithValue("@SpecialtyId", filters.SpecialtyId ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("@ProfessionId", filters.ProfessionId ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("@ProfessionalDirectionId", filters.ProfessionalDirectionId ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("@ScienceId", filters.ScienceId ?? (object)DBNull.Value);
+            // GeoLocation Filter
+            if (filters.GeoLocationFilter != null)
+            {
+                command.Parameters.AddWithValue("@Latitude", filters.GeoLocationFilter.Latitude);
+                command.Parameters.AddWithValue("@Longitude", filters.GeoLocationFilter.Longitude);
+                command.Parameters.AddWithValue("@Radius", filters.GeoLocationFilter.Radius);
+            }
 
             using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -51,47 +79,28 @@ namespace SchoolPortal.Api.Repositories
                 {
                     logger.Error(ex.Message);
                 }
-
             }
-
-            if (filters.SchoolYear.HasValue && filters.SchoolYear.Value > 0)
-                profiles = profiles.Where(p => p.SchoolYear == filters.SchoolYear.Value).ToList();
-
-            if (filters.Grade.HasValue && filters.Grade.Value > 0)
-                profiles = profiles.Where(p => p.Grade == filters.Grade.Value).ToList();
-
-            if (filters.SpecialtyId.HasValue && filters.SpecialtyId > 0)
-                profiles = profiles.Where(p => p.SpecialtyId == filters.SpecialtyId).ToList();
-
-            if (filters.ProfessionId.HasValue && filters.ProfessionId > 0)
-                profiles = profiles.Where(p => p.ProfessionId == filters.ProfessionId).ToList();
-
-            if (filters.ProfessionalDirectionId.HasValue && filters.ProfessionalDirectionId > 0)
-                profiles = profiles.Where(p => p.ProfessionalDirectionId == filters.ProfessionalDirectionId).ToList();
-
-            if (filters.ScienceId.HasValue && filters.ScienceId > 0)
-                profiles = profiles.Where(p => p.ScienceId == filters.ScienceId).ToList();
 
             return profiles;
         }
 
         private static ProfileModel ProfileReader(SqlDataReader reader)
         {
-
             return new ProfileModel
             {
                 ProfileId = Convert.ToInt32(reader["ProfileId"]),
                 ProfileName = Convert.ToString(reader["ProfileName"]),
-                Type = ConvertToNullableString(reader["Type"]),
+                ProfileType = ConvertToNullableString(reader["ProfileType"]),
                 Grade = GetNullableInt32(reader["Grade"]),
                 StudyPeriod = ConvertToNullableString(reader["StudyPeriod"]),
-                InstitutionId = GetNullableInt32(reader["InstitutionId"]),
+                InstitutionId = Convert.ToInt32(reader["InstitutionId"]),
+                InstitutionFullName = Convert.ToString(reader["InstitutionFullName"]),
                 GradingFormulas = ConvertToNullableString(reader["GradingFormulas"]),
                 StudyMethod = ConvertToNullableString(reader["StudyMethod"]),
                 EducationType = ConvertToNullableString(reader["EducationType"]),
                 ClassesCount = ConvertToNullableDecimal(reader["ClassesCount"]),
                 FirstForeignLanguage = ConvertToNullableString(reader["FirstForeignLanguage"]),
-                SchoolYear = GetNullableInt32(reader["SchoolYear"]),
+                SchoolYear = Convert.ToInt32(reader["SchoolYear"]),
                 IsPaperOnly = ConvertToBoolean(reader["IsPaperOnly"]),
                 ExternalId = GetNullableInt32(reader["ExternalId"]),
                 QuotasTotal = GetNullableInt32(reader["QuotasTotal"]),
@@ -103,6 +112,7 @@ namespace SchoolPortal.Api.Repositories
                 ProfessionalQualificationLevel = GetNullableInt32(reader["ProfessionalQualificationLevel"]),
                 IsProtected = ConvertToBoolean(reader["IsProtected"]),
                 HasExpectedShortage = ConvertToBoolean(reader["HasExpectedShortage"]),
+                IsProfessional = ConvertToBoolean(reader["IsProfessional"]),
                 SpecialtyDescription = ConvertToNullableString(reader["SpecialtyDescription"]),
                 ProfessionId = GetNullableInt32(reader["ProfessionId"]),
                 Profession = ConvertToNullableString(reader["Profession"]),
@@ -119,7 +129,9 @@ namespace SchoolPortal.Api.Repositories
         private static string? ConvertToNullableString(object readerResult)
         {
             if (readerResult == DBNull.Value)
+            {
                 return null;
+            }
 
             return Convert.ToString(readerResult);
         }
@@ -127,7 +139,9 @@ namespace SchoolPortal.Api.Repositories
         private static bool ConvertToBoolean(object readerResult)
         {
             if (readerResult == DBNull.Value)
+            {
                 return false;
+            }
 
             return Convert.ToInt32(readerResult) == 1;
         }
@@ -135,7 +149,9 @@ namespace SchoolPortal.Api.Repositories
         private static decimal? ConvertToNullableDecimal(object readerResult)
         {
             if (readerResult == DBNull.Value)
+            {
                 return null;
+            }
 
             return Convert.ToDecimal(readerResult);
         }
@@ -143,7 +159,9 @@ namespace SchoolPortal.Api.Repositories
         private static int? GetNullableInt32(object dbValue)
         {
             if (dbValue == DBNull.Value || dbValue == null)
+            {
                 return null;
+            }
 
             return Convert.ToInt32(dbValue);
         }
