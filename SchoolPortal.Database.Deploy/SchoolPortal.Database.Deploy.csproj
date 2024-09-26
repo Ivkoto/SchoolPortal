@@ -40,11 +40,13 @@
 	<ItemGroup>
 		<None Remove="appsettings.System.json" />
 		<None Remove="Scripts\**" />
+		<None Include="History\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="History\Views\" />
-	  <Folder Include="History\StoredProcedures\" />
+		<Folder Include="History\Functions\" />
+		<Folder Include="History\StoredProcedures\" />
 	</ItemGroup>
 
 </Project>

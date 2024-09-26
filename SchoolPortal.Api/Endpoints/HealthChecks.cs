@@ -2,7 +2,7 @@
 
 namespace SchoolPortal.Api.Endpoints
 {
-    public class HealthCheckEndpoints : IEndpoint
+    public class HealthChecks : IEndpoint
     {
         public void MapEndpoints(WebApplication app)
         {

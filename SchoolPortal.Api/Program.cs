@@ -1,5 +1,6 @@
 ﻿using SchoolPortal.Api.Endpoints;
 using SchoolPortal.Api.Extensions;
+using SchoolPortal.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddEndpoints(typeof(IEndpoint));
 
 var app = builder.Build();
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseEndpoints();
 
 app.MapGet("/", async context =>

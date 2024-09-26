@@ -1,8 +1,9 @@
 ﻿using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace SchoolPortal.Api.Endpoints
 {
-    public class SwaggerEndpoints : IEndpoint
+    public class Swagger : IEndpoint
     {
         public void MapEndpoints(WebApplication app)
         {
@@ -18,6 +19,7 @@ namespace SchoolPortal.Api.Endpoints
             services.AddSwaggerGen(s =>
             {
                 s.SwaggerDoc("v1", new OpenApiInfo { Title = "SchoolPortal API", Version = "v1" });
+                s.EnableAnnotations();
             });
         }
     }
