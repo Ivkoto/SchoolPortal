@@ -16,7 +16,9 @@ namespace SchoolPortal.Api.Endpoints
                .WithName("GetProfiles")
                .Produces<LookupProfilesResponse>(StatusCodes.Status200OK);
 
-            app.MapGet("/profiles/sciences", GetSciences);
+            app.MapGet("/profiles/sciences", GetSciences)
+                .WithName("GetSciences")
+                .Produces<LookupSciencesResponse>(StatusCodes.Status200OK);
 
             //Results from Mock Data
             app.MapGet("/profiles/grades", GetGrades);
@@ -46,6 +48,18 @@ namespace SchoolPortal.Api.Endpoints
             {
                 ProfileCount = profiles.Count,
                 Profiles = profiles
+            });
+        }
+
+        internal async Task<IResult> GetSciences(
+            [FromServices] IProfileRepository service, CancellationToken cancellationToken)
+        {
+            var sciences = await service.GetAllSciences(cancellationToken);
+
+            return Results.Ok(new LookupSciencesResponse
+            {
+                ScienceCount = sciences.Count,
+                Sciences = sciences
             });
         }
 
@@ -89,19 +103,6 @@ namespace SchoolPortal.Api.Endpoints
             return await ReadFromFileAsync(filePath);
         }
 
-        internal async Task<IEnumerable<ScienceModel>> GetSciences()
-        {
-            string filePath = "MockData/Sciences.json";
-            string fileContent;
-
-            using (var reader = new StreamReader(filePath, Encoding.UTF8))
-            {
-                fileContent = await reader.ReadToEndAsync();
-            }
-            var root = JsonConvert.DeserializeObject<SciencesRoot>(fileContent);
-
-            return root?.Sciences ?? new List<ScienceModel>();
-        }
 
         internal async Task<IEnumerable<SpecialtyModel>> GetSpecialties()
         {
