@@ -20,11 +20,15 @@ namespace SchoolPortal.Api.Endpoints
                 .WithName("GetSciences")
                 .Produces<LookupSciencesResponse>(StatusCodes.Status200OK);
 
+            app.MapGet("/profiles/professional-directions/{scienceId:int}", GetProfessionalDirections)
+                .WithName("GetProfessionalDirections")
+                .Produces<LookupProfessionalDirectionsResponse>(StatusCodes.Status200OK);
+
+            app.MapGet("/profiles/professions/{ProfessionalDirectionId:int}", GetProfessions)
+                .WithName("GetProfessions")
+                .Produces<LookupProfessionsResponse>(StatusCodes.Status200OK);
+
             //Results from Mock Data
-            app.MapGet("/profiles/grades", GetGrades);
-            app.MapGet("/profiles/professional-directions", GetProfessionalDirections);
-            app.MapGet("/profiles/professions", GetProfessions);
-            app.MapGet("/profiles/profile-types", GetProfileTypes);
             app.MapGet("/profiles/specialties", GetSpecialties);
         }
             
@@ -63,44 +67,32 @@ namespace SchoolPortal.Api.Endpoints
             });
         }
 
-        internal async Task<IEnumerable<string>> GetGrades()
+        internal async Task<IResult> GetProfessionalDirections(
+            int scienceId,
+            [FromServices] IProfileRepository service,
+            CancellationToken cancellationToken)
         {
-            string filePath = $"MockData/Grade.json";
-            return await ReadFromFileAsync(filePath);
-        }
+            var professionalDirections = await service.GetProfessionalDirectionsByScienceId(scienceId, cancellationToken);
 
-        internal async Task<IEnumerable<ProfessionalDirectionModel>> GetProfessionalDirections()
-        {
-            string filePath = "MockData/ProfessionalDirections.json";
-            string fileContent;
-
-            using (var reader = new StreamReader(filePath, Encoding.UTF8))
+            return Results.Ok(new LookupProfessionalDirectionsResponse
             {
-                fileContent = await reader.ReadToEndAsync();
-            }
-            var root = JsonConvert.DeserializeObject<ProfessionalDirectionsRoot>(fileContent);
-
-            return root?.ProfessionalDirections ?? new List<ProfessionalDirectionModel>();
+                ProfessionalDirectionCount = professionalDirections.Count,
+                ProfessionalDirections = professionalDirections
+            });
         }
 
-        internal async Task<IEnumerable<ProfessionModel>> GetProfessions()
+        internal async Task<IResult> GetProfessions(
+            int professionalDirectionId,
+            [FromServices] IProfileRepository service,
+            CancellationToken cancellationToken)
         {
-            string filePath = "MockData/Professions.json";
-            string fileContent;
+            var professions = await service.GetProfessionsByProfessionalDirectionId(professionalDirectionId, cancellationToken);
 
-            using (var reader = new StreamReader(filePath, Encoding.UTF8))
+            return Results.Ok(new LookupProfessionsResponse
             {
-                fileContent = await reader.ReadToEndAsync();
-            }
-            var root = JsonConvert.DeserializeObject<ProfessionModelRoot>(fileContent);
-
-            return root?.Professions ?? new List<ProfessionModel>();
-        }
-
-        internal async Task<IEnumerable<string>> GetProfileTypes()
-        {
-            string filePath = $"MockData/ProfileTypes.json";
-            return await ReadFromFileAsync(filePath);
+                ProfessionCount = professions.Count,
+                Professions = professions
+            });
         }
 
 

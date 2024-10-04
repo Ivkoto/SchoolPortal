@@ -5,7 +5,8 @@ SELECT
 	[ExternalId],
 	[Name]
 
-FROM [Application].[Science]
+FROM
+	[Application].[Science]
 GO
 
 -- get all Sciences PROC

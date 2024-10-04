@@ -1,4 +1,3 @@
--- get all Sciences PROC
 CREATE OR ALTER PROC [Application].[usp_GetAllSciences]
 AS
 BEGIN
@@ -11,4 +10,3 @@ BEGIN
 	FROM 
 		[Application].[v_Sciences]
 END;
-GO
