@@ -1,3 +1,40 @@
+-- get specialties view
+CREATE OR ALTER VIEW [Application].[v_Specialties] AS
+SELECT
+	[Id],
+	[ExternalId],
+	[Name],
+	[IsProfessional],
+	[ProfessionId]
+FROM
+	[Application].[Specialty]
+GO
+
+
+-- get Specialties by Professional Direction Id as optional PROC
+CREATE OR ALTER PROC [Application].[usp_SpecialtiesByProfessionId]
+	@ProfessionId	INT	= NULL,
+	@IsProfessional	INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+	SELECT
+		[Id],
+		[ExternalId],
+		[Name],
+		[IsProfessional],
+		[ProfessionId]
+	FROM
+		[Application].[v_Specialties]
+	WHERE
+		(@ProfessionId	 IS NULL OR [ProfessionId] = @ProfessionId)
+		AND [IsProfessional] = @IsProfessional;
+END;
+GO
+
+
+-- Update filteres profiles PROC
 CREATE OR ALTER PROC [Application].[usp_GetFilteredProfiles]
     @SchoolYear              INT			= NULL,
     @Grade                   INT			= NULL,
@@ -78,3 +115,4 @@ BEGIN
                 ([Application].[fn_CalculateDistanceHaversine] (@Latitude, @Longitude, GeoLatitude, GeoLongitude) <= @Radius)
             );
 END;
+GO

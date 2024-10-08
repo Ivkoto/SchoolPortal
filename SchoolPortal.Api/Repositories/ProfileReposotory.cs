@@ -12,6 +12,7 @@ namespace SchoolPortal.Api.Repositories
         Task<List<ScienceModel>> GetAllSciences(CancellationToken cancellationToken);
         Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId, CancellationToken cancellationToken);
         Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId, CancellationToken cancellationToken);
+        Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(string profileType, CancellationToken cancellationToken, int? professionId);
     }
     public class ProfileRepository : IProfileRepository
     {
@@ -39,7 +40,23 @@ namespace SchoolPortal.Api.Repositories
             parameters.Add("@Neighbourhood", filters.Neighbourhood ?? (object)DBNull.Value, DbType.String);
             parameters.Add("@SchoolYear", filters.SchoolYear ?? (object)DBNull.Value, DbType.Int32);
             parameters.Add("@Grade", filters.Grade ?? (object)DBNull.Value, DbType.Int32);
-            parameters.Add("@ProfileType", filters.ProfileType ?? (object)DBNull.Value, DbType.String);
+
+            if (filters.ProfileType is not null)
+            {
+                if (filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional)
+                {
+                    parameters.Add("@IsProfessional", 1, DbType.Int32);
+                }
+                else if(filters.ProfileType.ToLower() == CustomEnums.ProfileType.Profiled)
+                {
+                    parameters.Add("@IsProfessional", 0, DbType.Int32);
+                }
+            }
+            else
+            { 
+                parameters.Add("@IsProfessional", (object)DBNull.Value, DbType.Int32);
+            }
+
             parameters.Add("@SpecialtyId", filters.SpecialtyId ?? (object)DBNull.Value, DbType.Int32);
             parameters.Add("@ProfessionId", filters.ProfessionId ?? (object)DBNull.Value, DbType.Int32);
             parameters.Add("@ProfessionalDirectionId", filters.ProfessionalDirectionId ?? (object)DBNull.Value, DbType.Int32);
@@ -98,6 +115,37 @@ namespace SchoolPortal.Api.Repositories
             return(await connection.QueryAsync<ProfessionModel>(
                 sql: "[Application].[usp_ProfessionsByProfessionalDirectionId]",
                 param: new { ProfessionalDirectionId = professionalDirectionId},
+                commandType: CommandType.StoredProcedure
+            )).ToList();
+        }
+
+        public async Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(
+            string profileType, CancellationToken cancellationToken, int? professionId)
+        {
+            var connectionString = configuration.GetConnectionString("DatabaseConnection");
+
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            var parameters = new DynamicParameters();
+
+            if(profileType == CustomEnums.ProfileType.Professional)
+            {
+                parameters.Add("@IsProfessional", 1, DbType.Int32);
+            }
+            else
+            {
+                parameters.Add("@IsProfessional", 0, DbType.Int32);
+            }
+
+            if (professionId.HasValue)
+            {
+                parameters.Add("@ProfessionId", professionId.Value, DbType.Int32);
+            }
+
+            return (await connection.QueryAsync<SpecialtyModel>(
+                sql: "[Application].[usp_SpecialtiesByProfessionId]",
+                param: parameters,
                 commandType: CommandType.StoredProcedure
             )).ToList();
         }

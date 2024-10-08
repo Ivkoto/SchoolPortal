@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using DbUp;
+﻿using DbUp;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using System.Reflection;
 
 namespace SchoolPortal.Database.Deploy
 {
@@ -22,6 +22,7 @@ namespace SchoolPortal.Database.Deploy
                 var connectionString = configuration.GetConnectionString("DatabaseConnection");
                 var environment = configuration["Environment"];
                 var result = DeployDatabase(connectionString, environment);
+
                 Log.Information("Deployment {Result}", result ? "Successful" : "Failed");
 
                 return result ? 0 : 1;
@@ -29,6 +30,7 @@ namespace SchoolPortal.Database.Deploy
             catch (Exception ex)
             {
                 Log.Fatal(ex, "An unhandled exception occurred during deployment.");
+
                 return 1;
             }
             finally

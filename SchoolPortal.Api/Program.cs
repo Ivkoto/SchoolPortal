@@ -11,6 +11,7 @@ builder.Services.AddEndpoints(typeof(IEndpoint));
 var app = builder.Build();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseEndpoints();
 
 app.MapGet("/", async context =>
