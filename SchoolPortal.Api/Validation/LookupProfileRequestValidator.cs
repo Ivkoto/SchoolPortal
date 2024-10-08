@@ -28,4 +28,18 @@ namespace SchoolPortal.Api.Validation
                 .WithMessage("Radius value must be no more than 999.");
         }
     }
+
+    public class LookupProfilesValidator : AbstractValidator<LookupProfilesRequest> 
+    {
+        public LookupProfilesValidator()
+        {
+            RuleFor(x => x.ProfileType)
+                .Must(IsValidProfileType)
+                .WithMessage($"Provided profile type must be either '{CustomEnums.ProfileType.Professional}' or '{CustomEnums.ProfileType.Profiled}'.");
+        }
+
+        private bool IsValidProfileType(string? profileType)
+            => profileType?.ToLower() == CustomEnums.ProfileType.Professional 
+            || profileType?.ToLower() == CustomEnums.ProfileType.Profiled;
+    }
 }

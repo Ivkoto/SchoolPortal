@@ -1,7 +1,5 @@
-﻿using System.Text;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
 using SchoolPortal.Api.Validation;
@@ -28,23 +26,29 @@ namespace SchoolPortal.Api.Endpoints
                 .WithName("GetProfessions")
                 .Produces<LookupProfessionsResponse>(StatusCodes.Status200OK);
 
-            //Results from Mock Data
-            app.MapGet("/profiles/specialties", GetSpecialties);
+            app.MapGet("/profiles/specialties/{profileType}/{professionId:int?}", GetSpecialties)
+                .WithName("GetSpecialties")
+                .Produces<LookupSpecialtyResponse>(StatusCodes.Status200OK);
         }
-            
+
         internal async Task<IResult> GetFilteredProfiles(
             [FromBody] LookupProfilesRequest filters, [FromServices] IProfileRepository service,
-            IValidator<GeoLocationRequest> validator, CancellationToken cancellationToken)
+            IValidator<LookupProfilesRequest> filtersValidator, IValidator<GeoLocationRequest> locationValidator,
+            CancellationToken cancellationToken)
         {
             if (filters.GeoLocationFilter is not null)
             {
-                var validationResult = await validator.ValidateAsync(filters.GeoLocationFilter, cancellationToken);
-
-                if (!validationResult.IsValid)
-                {
-                    return Results.ValidationProblem(validationResult.ToDictionary());
-                }
+                var locationValidationResult = await locationValidator.ValidateAsync(filters.GeoLocationFilter, cancellationToken);
+                if (!locationValidationResult.IsValid)
+                    return Results.ValidationProblem(locationValidationResult.ToDictionary());
             }
+
+            if (filters.ProfileType is not null)
+            {
+                var profileValidationResult = await filtersValidator.ValidateAsync(filters, cancellationToken);
+                if (!profileValidationResult.IsValid)
+                    return Results.ValidationProblem(profileValidationResult.ToDictionary());
+            } 
 
             var profiles = await service.GetFilteredProfiles(filters, cancellationToken);
 
@@ -96,37 +100,37 @@ namespace SchoolPortal.Api.Endpoints
         }
 
 
-        internal async Task<IEnumerable<SpecialtyModel>> GetSpecialties()
+        internal async Task<IResult> GetSpecialties(
+            string profileType,
+            int? professionId,
+            [FromServices] IProfileRepository service,
+            CancellationToken cancellationToken)
         {
-            string filePath = "MockData/Specialties.json";
-            string fileContent;
+            var isProfiled = profileType == CustomEnums.ProfileType.Profiled;
+            var isProfessional = profileType == CustomEnums.ProfileType.Professional;
 
-            using (var reader = new StreamReader(filePath, Encoding.UTF8))
+            if (!isProfessional && !isProfiled)
             {
-                fileContent = await reader.ReadToEndAsync();
+                return Results.BadRequest($"Invalid value for 'Profile Type'. It must be either '{CustomEnums.ProfileType.Professional}' or '{CustomEnums.ProfileType.Profiled}'");
             }
-            var root = JsonConvert.DeserializeObject<SpecialtiesRoot>(fileContent);
-
-            return root?.Specialties ?? new List<SpecialtyModel>();
-        }
-
-        private async Task<List<string>> ReadFromFileAsync(string filePath)
-        {
-            string fileContent;
-
-            using (var reader = new StreamReader(filePath, Encoding.UTF8))
+            if (isProfiled && professionId.HasValue)
             {
-                fileContent = await reader.ReadToEndAsync();
+                return Results.BadRequest($"If the specialty is not of type {CustomEnums.ProfileType.Professional}, it does not contain a profession ID.");
             }
 
-            var professionalDirections = JsonConvert.DeserializeObject<List<string>>(fileContent);
+            var specialties = await service.GetSpecialtiesByProfessionId(profileType, cancellationToken, professionId);
 
-            return professionalDirections ?? new List<string>();
+            return Results.Ok(new LookupSpecialtyResponse
+            {
+                SpecialtyCount = specialties.Count,
+                Specialties = specialties
+            });
         }
 
         public void MapServices(IServiceCollection services)
         {
             services.AddSingleton<IProfileRepository, ProfileRepository>();
+            services.AddScoped<IValidator<LookupProfilesRequest>, LookupProfilesValidator>();
             services.AddScoped<IValidator<GeoLocationRequest>, GeoLocationValidator>();
         }
     }
