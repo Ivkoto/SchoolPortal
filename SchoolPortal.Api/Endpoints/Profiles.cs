@@ -26,31 +26,37 @@ namespace SchoolPortal.Api.Endpoints
                 .WithName("GetProfessions")
                 .Produces<LookupProfessionsResponse>(StatusCodes.Status200OK);
 
-            app.MapGet("/profiles/specialties/{profileType}/{professionId:int?}", GetSpecialties)
+            app.MapGet("/profiles/specialties/{professionId:int}", GetSpecialties)
                 .WithName("GetSpecialties")
                 .Produces<LookupSpecialtyResponse>(StatusCodes.Status200OK);
         }
 
+        public void MapServices(IServiceCollection services)
+        {
+            services.AddSingleton<IProfileRepository, ProfileRepository>();
+            services.AddScoped<IValidator<LookupProfilesRequest>, LookupProfilesValidator>();
+            services.AddScoped<IValidator<GeoLocationRequest>, GeoLocationValidator>();
+        }
+
         internal async Task<IResult> GetFilteredProfiles(
             [FromBody] LookupProfilesRequest filters, [FromServices] IProfileRepository service,
-            IValidator<LookupProfilesRequest> filtersValidator, IValidator<GeoLocationRequest> locationValidator,
-            CancellationToken cancellationToken)
+            IValidator<LookupProfilesRequest> filtersValidator, IValidator<GeoLocationRequest> locationValidator)
         {
             if (filters.GeoLocationFilter is not null)
             {
-                var locationValidationResult = await locationValidator.ValidateAsync(filters.GeoLocationFilter, cancellationToken);
+                var locationValidationResult = await locationValidator.ValidateAsync(filters.GeoLocationFilter);
                 if (!locationValidationResult.IsValid)
                     return Results.ValidationProblem(locationValidationResult.ToDictionary());
             }
 
             if (filters.ProfileType is not null)
             {
-                var profileValidationResult = await filtersValidator.ValidateAsync(filters, cancellationToken);
+                var profileValidationResult = await filtersValidator.ValidateAsync(filters);
                 if (!profileValidationResult.IsValid)
                     return Results.ValidationProblem(profileValidationResult.ToDictionary());
             } 
 
-            var profiles = await service.GetFilteredProfiles(filters, cancellationToken);
+            var profiles = await service.GetFilteredProfiles(filters);
 
             return Results.Ok(new LookupProfilesResponse
             {
@@ -62,7 +68,7 @@ namespace SchoolPortal.Api.Endpoints
         internal async Task<IResult> GetSciences(
             [FromServices] IProfileRepository service, CancellationToken cancellationToken)
         {
-            var sciences = await service.GetAllSciences(cancellationToken);
+            var sciences = await service.GetAllSciences();
 
             return Results.Ok(new LookupSciencesResponse
             {
@@ -72,11 +78,9 @@ namespace SchoolPortal.Api.Endpoints
         }
 
         internal async Task<IResult> GetProfessionalDirections(
-            int scienceId,
-            [FromServices] IProfileRepository service,
-            CancellationToken cancellationToken)
+            int scienceId, [FromServices] IProfileRepository service)
         {
-            var professionalDirections = await service.GetProfessionalDirectionsByScienceId(scienceId, cancellationToken);
+            var professionalDirections = await service.GetProfessionalDirectionsByScienceId(scienceId);
 
             return Results.Ok(new LookupProfessionalDirectionsResponse
             {
@@ -86,11 +90,9 @@ namespace SchoolPortal.Api.Endpoints
         }
 
         internal async Task<IResult> GetProfessions(
-            int professionalDirectionId,
-            [FromServices] IProfileRepository service,
-            CancellationToken cancellationToken)
+            int professionalDirectionId, [FromServices] IProfileRepository service)
         {
-            var professions = await service.GetProfessionsByProfessionalDirectionId(professionalDirectionId, cancellationToken);
+            var professions = await service.GetProfessionsByProfessionalDirectionId(professionalDirectionId);
 
             return Results.Ok(new LookupProfessionsResponse
             {
@@ -99,39 +101,16 @@ namespace SchoolPortal.Api.Endpoints
             });
         }
 
-
         internal async Task<IResult> GetSpecialties(
-            string profileType,
-            int? professionId,
-            [FromServices] IProfileRepository service,
-            CancellationToken cancellationToken)
+            int professionId, [FromServices] IProfileRepository service)
         {
-            var isProfiled = profileType == CustomEnums.ProfileType.Profiled;
-            var isProfessional = profileType == CustomEnums.ProfileType.Professional;
-
-            if (!isProfessional && !isProfiled)
-            {
-                return Results.BadRequest($"Invalid value for 'Profile Type'. It must be either '{CustomEnums.ProfileType.Professional}' or '{CustomEnums.ProfileType.Profiled}'");
-            }
-            if (isProfiled && professionId.HasValue)
-            {
-                return Results.BadRequest($"If the specialty is not of type {CustomEnums.ProfileType.Professional}, it does not contain a profession ID.");
-            }
-
-            var specialties = await service.GetSpecialtiesByProfessionId(profileType, cancellationToken, professionId);
+            var specialties = await service.GetSpecialtiesByProfessionId(professionId);
 
             return Results.Ok(new LookupSpecialtyResponse
             {
                 SpecialtyCount = specialties.Count,
                 Specialties = specialties
             });
-        }
-
-        public void MapServices(IServiceCollection services)
-        {
-            services.AddSingleton<IProfileRepository, ProfileRepository>();
-            services.AddScoped<IValidator<LookupProfilesRequest>, LookupProfilesValidator>();
-            services.AddScoped<IValidator<GeoLocationRequest>, GeoLocationValidator>();
-        }
+        }        
     }
 }

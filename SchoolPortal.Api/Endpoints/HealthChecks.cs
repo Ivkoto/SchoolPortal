@@ -10,6 +10,12 @@ namespace SchoolPortal.Api.Endpoints
             app.MapGet("/ping/details", PingDetails);
         }
 
+        public void MapServices(IServiceCollection services)
+        {
+            services.AddSingleton<IApiHealthCheckRepository, ApiHealthCheckRepository>();
+            services.AddHealthChecks();
+        }
+
         internal async Task<IResult> Ping(IApiHealthCheckRepository service, CancellationToken cancellationToken)
         {
             return await service.Ping(cancellationToken);
@@ -18,12 +24,6 @@ namespace SchoolPortal.Api.Endpoints
         internal async Task<IResult> PingDetails(IApiHealthCheckRepository service, CancellationToken cancellationToken)
         {
             return await service.PingDetails(cancellationToken);
-        }
-
-        public void MapServices(IServiceCollection services)
-        {
-            services.AddSingleton<IApiHealthCheckRepository, ApiHealthCheckRepository>();
-            services.AddHealthChecks();
-        }
+        }        
     }
 }
