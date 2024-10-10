@@ -1,36 +1,32 @@
 ﻿using System.Data;
 using Dapper;
-using Microsoft.Data.SqlClient;
+using SchoolPortal.Api.Extensions;
 using SchoolPortal.Api.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SchoolPortal.Api.Repositories
 {
     public interface IProfileRepository
     {
-        Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters, CancellationToken cancellationToken);
-        Task<List<ScienceModel>> GetAllSciences(CancellationToken cancellationToken);
-        Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId, CancellationToken cancellationToken);
-        Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId, CancellationToken cancellationToken);
-        Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(string profileType, CancellationToken cancellationToken, int? professionId);
+        Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters);
+        Task<List<ScienceModel>> GetAllSciences();
+        Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
+        Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId);
+        Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId);
     }
     public class ProfileRepository : IProfileRepository
     {
-        private readonly IConfiguration configuration;
         private readonly Serilog.ILogger logger;
+        private readonly IDbConnectionFactory connectionFactory;
 
-        public ProfileRepository(IConfiguration configuration, Serilog.ILogger logger)
+        public ProfileRepository(IConfiguration configuration, Serilog.ILogger logger, IDbConnectionFactory connectionFactory)
         {
-            this.configuration = configuration;
             this.logger = logger;
+            this.connectionFactory = connectionFactory;
         }
 
-        public async Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters, CancellationToken cancellationToken)
+        public async Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters)
         {
-            var connectionString = configuration.GetConnectionString("DatabaseConnection");
-
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
+            var connection = await connectionFactory.CreateConnectionAsync();
 
             var parameters = new DynamicParameters();
 
@@ -43,14 +39,8 @@ namespace SchoolPortal.Api.Repositories
 
             if (filters.ProfileType is not null)
             {
-                if (filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional)
-                {
-                    parameters.Add("@IsProfessional", 1, DbType.Int32);
-                }
-                else if(filters.ProfileType.ToLower() == CustomEnums.ProfileType.Profiled)
-                {
-                    parameters.Add("@IsProfessional", 0, DbType.Int32);
-                }
+                var isProfessional = filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional ? 1 : 0;
+                parameters.Add("@IsProfessional", isProfessional, DbType.Int32);
             }
             else
             { 
@@ -76,12 +66,10 @@ namespace SchoolPortal.Api.Repositories
             )).ToList();
         }
 
-        public async Task<List<ScienceModel>> GetAllSciences(CancellationToken cancellationToken)
+        public async Task<List<ScienceModel>> GetAllSciences()
         {
-            var connectionString = configuration.GetConnectionString("DatabaseConnection");
+            var connection = await connectionFactory.CreateConnectionAsync();
 
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
 
             return (await connection.QueryAsync<ScienceModel>(
                         sql: "[Application].[usp_GetAllSciences]",
@@ -89,13 +77,10 @@ namespace SchoolPortal.Api.Repositories
             )).ToList();
         }
 
-        public async Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(
-            int scienceId, CancellationToken cancellationToken)
+        public async Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId)
         {
-            var connectionString = configuration.GetConnectionString("DatabaseConnection");
+            var connection = await connectionFactory.CreateConnectionAsync();
 
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
 
             return(await connection.QueryAsync<ProfessionalDirectionModel>(
                 sql: "[Application].[usp_ProfessionalDirectionsByScienceId]",
@@ -104,13 +89,9 @@ namespace SchoolPortal.Api.Repositories
             )).ToList();
         }
 
-        public async Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(
-            int professionalDirectionId, CancellationToken cancellationToken)
+        public async Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId)
         {
-            var connectionString = configuration.GetConnectionString("DatabaseConnection");
-
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
+            var connection = await connectionFactory.CreateConnectionAsync();
 
             return(await connection.QueryAsync<ProfessionModel>(
                 sql: "[Application].[usp_ProfessionsByProfessionalDirectionId]",
@@ -119,29 +100,14 @@ namespace SchoolPortal.Api.Repositories
             )).ToList();
         }
 
-        public async Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(
-            string profileType, CancellationToken cancellationToken, int? professionId)
+        public async Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId)
         {
-            var connectionString = configuration.GetConnectionString("DatabaseConnection");
-
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
+            var connection = await connectionFactory.CreateConnectionAsync();
 
             var parameters = new DynamicParameters();
 
-            if(profileType == CustomEnums.ProfileType.Professional)
-            {
-                parameters.Add("@IsProfessional", 1, DbType.Int32);
-            }
-            else
-            {
-                parameters.Add("@IsProfessional", 0, DbType.Int32);
-            }
-
-            if (professionId.HasValue)
-            {
-                parameters.Add("@ProfessionId", professionId.Value, DbType.Int32);
-            }
+            parameters.Add("@IsProfessional", professionId > 0 ? 1 : 0, DbType.Int32);
+            parameters.Add("@ProfessionId", professionId > 0 ? professionId : (object)DBNull.Value, DbType.Int32);
 
             return (await connection.QueryAsync<SpecialtyModel>(
                 sql: "[Application].[usp_SpecialtiesByProfessionId]",

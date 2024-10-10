@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddConfiguration();
 builder.Services.AddLogger();
 builder.Services.AddEndpoints(typeof(IEndpoint));
+builder.Services.AddSingleton<IDbConnectionFactory>(
+    _ => new DbConnectionFactory(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
 var app = builder.Build();
 
