@@ -33,20 +33,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Scripts\**">
-		</EmbeddedResource>
+		<EmbeddedResource Include="AlwaysRun\Functions\**" />
+		<EmbeddedResource Include="AlwaysRun\Views\**" />
+		<EmbeddedResource Include="AlwaysRun\StoredProcedures\**" />
+		<EmbeddedResource Include="Scripts\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="appsettings.System.json" />
 		<None Remove="Scripts\**" />
-		<None Include="History\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="History\Views\" />
-		<Folder Include="History\Functions\" />
-		<Folder Include="History\StoredProcedures\" />
+		<None Include="AlwaysRun\**" />
 	</ItemGroup>
 
 </Project>

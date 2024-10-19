@@ -1,4 +1,6 @@
 ﻿using DbUp;
+using DbUp.Engine;
+using DbUp.Support;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.Reflection;
@@ -55,7 +57,14 @@ namespace SchoolPortal.Database.Deploy
 
             var upgrader = DeployChanges.To
                 .SqlDatabase(connectionString)
-                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".Scripts."))
+                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".Scripts."),
+                    new SqlScriptOptions { RunGroupOrder = 1, ScriptType = ScriptType.RunOnce })
+                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Functions."),
+                    new SqlScriptOptions { RunGroupOrder = 2, ScriptType = ScriptType.RunAlways })
+                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Views."),
+                    new SqlScriptOptions { RunGroupOrder = 3, ScriptType = ScriptType.RunAlways })
+                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.StoredProcedures."),
+                    new SqlScriptOptions { RunGroupOrder = 4, ScriptType = ScriptType.RunAlways })
                 .LogToConsole()
                 .Build();
 

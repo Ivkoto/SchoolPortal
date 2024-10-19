@@ -1,11 +1,10 @@
 ﻿CREATE TABLE [Application].[SchoolYear]
 (
-    --[Id] INT IDENTITY PRIMARY KEY CLUSTERED,
 	[Id] INT NOT NULL IDENTITY (1, 1),
-    [StartDate] DATETIME2 NOT NULL,
-    [EndDate] DATETIME2 NOT NULL,
+	[Year] INT,
 
-	CONSTRAINT [PK_Applications_SchoolYear_Id] PRIMARY KEY CLUSTERED ([Id])
+	CONSTRAINT [PK_Applications_SchoolYear_Id] PRIMARY KEY CLUSTERED ([Id]),
+	CONSTRAINT [CK_Year] CHECK ([Year] BETWEEN 2000 AND 2100)
 );
 GO
 
@@ -16,9 +15,10 @@ CREATE TABLE [Application].[Address] -- (квартал "К",) улица "У", 
     [Municipality] NVARCHAR(100),
     [Region] NVARCHAR(100), -- Банкя, Витоша, Възраждане,..
     [Settlement] NVARCHAR(100),
+	[SettlementType] NVARCHAR(10),
     [Neighbourhood] NVARCHAR(100), -- Люлин 1, Младост 2,..
     [Address] NVARCHAR(1000), -- улица, номер
-    [PostalCode] INT, -- (Дейност)
+    [PostalCode] NVARCHAR(20),
 	[Latitude] DECIMAL(17,15),
 	[Longitude] DECIMAL(18,15),
 
@@ -45,22 +45,11 @@ CREATE TABLE [Application].[SubjectAbbreviation]
 );
 GO
 
-CREATE TABLE [Application].[AdmissionByQuotas]
-(
-    [Id] INT NOT NULL IDENTITY (1, 1),
-    [TotalBasis] INT,
-	[Male] INT,
-	[Female] INT,
-
-	CONSTRAINT [PK_AdmissionByQuotas_Id] PRIMARY KEY CLUSTERED ([Id])
-);
-GO
-
 CREATE TABLE [Application].[Science]
 (
 	[Id] INT NOT NULL IDENTITY (1, 1),
-	[ExternalId] INT NOT NULL,
-    [Name] NVARCHAR(300), -- Изкуства, Хуманитарни науки, Информатика...
+	[ExternalId] INT,
+    [Name] NVARCHAR(300),
 
 	CONSTRAINT [PK_Science_Id] PRIMARY KEY CLUSTERED ([Id]),
 	CONSTRAINT [UQ_Science_ExternalId] UNIQUE ([ExternalId])
@@ -133,13 +122,7 @@ CREATE TABLE [Application].[Institution]
 	CONSTRAINT [FK_Institution_FinancingTypeId] FOREIGN KEY ([FinancingTypeId]) REFERENCES [Application].[InstitutionFinancingType] (Id),
 	CONSTRAINT [FK_Institution_OwnershipId] FOREIGN KEY ([OwnershipId]) REFERENCES [Application].[InstitutionOwnership] (Id),
 	CONSTRAINT [FK_Institution_InstitutionStatusId] FOREIGN KEY ([StatusId]) REFERENCES [Application].[InstitutionStatus] (Id)
-
-	--[ValidFrom] DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
-	--[ValidTo] DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
-
-    --PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
-)
---WITH ( SYSTEM_VERSIONING = ON ( HISTORY_TABLE = [Application].[InstitutionsHistory] ));
+);
 GO
 
 CREATE TABLE [Application].[SubInstitution]
@@ -157,24 +140,22 @@ CREATE TABLE [Application].[SubInstitution]
 
 	CONSTRAINT [PK_SubInstitution_Id] PRIMARY KEY CLUSTERED ([Id]),
 	CONSTRAINT [FK_SubInstitution_InstitutionId] FOREIGN KEY ([InstitutionId]) REFERENCES [Application].[Institution] (Id),
-    CONSTRAINT [FK_SubInstitution_AddressOfActivityId] FOREIGN KEY ([AddressOfActivityId]) REFERENCES [Application].[Address] ([Id]),
-    CONSTRAINT [FK_SubInstitution_InstitutionPreparationTypeId] FOREIGN KEY ([PreparationTypeId]) REFERENCES [Application].[InstitutionPreparationType] ([Id])
-)
+	CONSTRAINT [FK_SubInstitution_AddressOfActivityId] FOREIGN KEY ([AddressOfActivityId]) REFERENCES [Application].[Address] ([Id]),
+	CONSTRAINT [FK_SubInstitution_InstitutionPreparationTypeId] FOREIGN KEY ([PreparationTypeId]) REFERENCES [Application].[InstitutionPreparationType] ([Id])
+);
 GO
 
 CREATE TABLE [Application].[Profile]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-	[ExternalId] INT NOT NULL,
 	[Name] NVARCHAR(300),
 	[Type] NVARCHAR(100), -- професионална, профилирана, ...
 	[Grade] INT, -- Отнася се за кандидатстване за клас: 5/8/12
-	[StudyPeriod] NVARCHAR(15),
+	[StudyPeriod] NVARCHAR(15) NULL,
 
-	[SubInstitutionId] INT NOT NULL,
+	[SubInstitutionId] INT,
 
 	CONSTRAINT [PK_Profile_Id] PRIMARY KEY CLUSTERED ([Id]),
-	CONSTRAINT [UQ_Profile_ExternalId] UNIQUE ([ExternalId]),
 	CONSTRAINT [FK_Profile_SubInstitutionId] FOREIGN KEY ([SubInstitutionId]) REFERENCES [Application].[SubInstitution] ([Id])
 );
 GO
@@ -182,7 +163,7 @@ GO
 CREATE TABLE [Application].[ProfessionalDirection]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-	[ExternalId] INT NOT NULL,
+	[ExternalId] INT,
     [Name] NVARCHAR(300), -- Изящни изкуства, Музикални и сценични изкуства, ...
 
 	[ScienceId] INT,
@@ -196,7 +177,7 @@ GO
 CREATE TABLE [Application].[Profession]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-	[ExternalId] INT NOT NULL,
+	[ExternalId] INT,
     [Name] NVARCHAR(300), -- Художник – изящни изкуства, Музикант- инструменталист
 
 	[ProfessionalDirectionId] INT,
@@ -210,14 +191,15 @@ GO
 CREATE TABLE [Application].[Specialty]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
-	[ExternalId] INT NOT NULL,
+	[ExternalId] INT,
     [Name] NVARCHAR(300), -- Живопис, Стенопис, Графика, Скулптура
 	[ProfessionalQualificationLevel] INT, -- I/1/първа, II/2/втора, III/3/трета, IV/4
-    [IsProtected] BIT DEFAULT 0,
-    [HasExpectedShortage] BIT DEFAULT 0,
+    [IsProfessional] BIT DEFAULT 0,
+	[IsProtected] BIT DEFAULT 0 NOT NULL,
+    [HasExpectedShortage] BIT DEFAULT 0 NOT NULL,
 	[Description] NVARCHAR(300),
 
-    [ProfessionId] INT
+    [ProfessionId] INT,
 
 	CONSTRAINT [PK_Specialty_Id] PRIMARY KEY CLUSTERED ([Id]),
 	CONSTRAINT [UQ_Specialty_ExternalId] UNIQUE ([ExternalId]),
@@ -228,33 +210,40 @@ GO
 CREATE TABLE [Application].[ProfileDetails]
 (
     [Id] INT NOT NULL IDENTITY (1, 1),
+	[ExternalId] INT,
 	[GradingFormulas] NVARCHAR(1000), -- (2*БЕЛ+2*МАТ)+(1*БЗО+1*ХООС)
 	[StudyMethod] NVARCHAR(100), -- разширено/интензивно/нито едно от двете
 	[EducatingType] NVARCHAR(100), -- дневна, дуална, ...
 	[ClassesCount] DECIMAL(4, 2),
 	[FirstForeignLanguage] NVARCHAR(100),
+	[IsPaperOnly] BIT NOT NULL DEFAULT 0,
+	[Quotas_Total] INT,
+	[Quotas_Male] INT,
+	[Quotas_Female] INT,
 
 	[ProfileId] INT NOT NULL,
 	[SchoolYearId] INT,
-	[AdmissionByQuotasId] INT, -- TODO more than one AdmissionByQuotasId or new property IsChildrenCountVaries
 	[SpecialtyId] INT,
 
 	CONSTRAINT [PK_ProfileDetails_Id] PRIMARY KEY CLUSTERED ([Id]),
 	CONSTRAINT [UQ_ProfileDetails_ProfileId_SchoolYearId] UNIQUE ([ProfileId], [SchoolYearId]),
 	CONSTRAINT [FK_ProfileDetails_ProfileId] FOREIGN KEY ([ProfileId]) REFERENCES [Application].[Profile] ([Id]),
 	CONSTRAINT [FK_ProfileDetails_SchoolYearId] FOREIGN KEY ([SchoolYearId]) REFERENCES [Application].[SchoolYear] ([Id]),
-	CONSTRAINT [FK_ProfileDetails_AdmissionByQuotasId] FOREIGN KEY ([AdmissionByQuotasId]) REFERENCES [Application].[AdmissionByQuotas] ([Id]),
 	CONSTRAINT [FK_ProfileDetails_SpecialtyId] FOREIGN KEY ([SpecialtyId]) REFERENCES [Application].[Specialty] ([Id])
 );
 GO
 
 CREATE TABLE [Application].[ExamStage]
 (
-    [Id] INT NOT NULL IDENTITY (1, 1),
-	[StageNumber] INT NOT NULL,
+	[Id] INT NOT NULL IDENTITY (1, 1),
+	[StageNumber] INT,
+	[FreePositionsTotal] INT,
+	[FreePositionsMen] INT,
+	[FreePositionsWomen] INT,
+	[IsAggregatedScore] BIT DEFAULT 0,
 
 	[ProfileId] INT,
-	[SchoolYearId] INT,
+	[SchoolYearId] INT	NULL,
 	[MinScoresId] INT,
 	[MaxScoresId] INT,
 
@@ -272,6 +261,8 @@ CREATE TABLE [Application].[ExamResult]
 	[PreparationType] NVARCHAR(100), -- З(задълж.), B1-З, B2-З, B1.1-З
 	[CandidateCount] INT,
 	[AverageSuccess] DECIMAL(5, 2),
+	[Grade] INT,
+	[LevelType] NVARCHAR(30),
 
 	[SubjectAbbreviationId] INT,
 	[SubInstitutionId] INT,
@@ -279,10 +270,49 @@ CREATE TABLE [Application].[ExamResult]
 	[ExamAbbreviationId] INT,
 
 	CONSTRAINT [PK_ExamResult_Id] PRIMARY KEY CLUSTERED ([Id]),
-	CONSTRAINT [FK_ExamResult_SubjectAbbreviationId] FOREIGN KEY ( [SubjectAbbreviationId] ) REFERENCES [Application].[SubjectAbbreviation] (Id),
-	CONSTRAINT [FK_ExamResult_SubInstitutionId] FOREIGN KEY ( [SubInstitutionId] ) REFERENCES [Application].[SubInstitution] (Id),
-	CONSTRAINT [FK_ExamResult_SchoolYearId] FOREIGN KEY ( [SchoolYearId] ) REFERENCES [Application].[SchoolYear] (Id),
-	CONSTRAINT [FK_ExamResult_ExamAbbreviationId] FOREIGN KEY ( [ExamAbbreviationId] ) REFERENCES [Application].[ExamAbbreviation] (Id)
+	CONSTRAINT [FK_ExamResult_SubjectAbbreviationId] FOREIGN KEY ( [SubjectAbbreviationId] ) REFERENCES [Application].[SubjectAbbreviation] ([Id]),
+	CONSTRAINT [FK_ExamResult_SubInstitutionId] FOREIGN KEY ( [SubInstitutionId] ) REFERENCES [Application].[SubInstitution] ([Id]),
+	CONSTRAINT [FK_ExamResult_SchoolYearId] FOREIGN KEY ( [SchoolYearId] ) REFERENCES [Application].[SchoolYear] ([Id]),
+	CONSTRAINT [FK_ExamResult_ExamAbbreviationId] FOREIGN KEY ( [ExamAbbreviationId] ) REFERENCES [Application].[ExamAbbreviation] ([Id])
+);
+GO
+
+CREATE TABLE [Application].[SuccessRate]
+(
+    [Id] INT NOT NULL IDENTITY (1, 1),
+
+    [ExamAbbreviationId] INT,
+    [Grade] INT,
+    [SchoolYearId] INT,
+    [Area] NVARCHAR(30),
+    [SubjectAbbreviationId] INT,
+    [PreparationType] NVARCHAR(50),
+    [LevelType] NVARCHAR(50),
+
+    [AreSeparated] BIT DEFAULT 0,
+
+	[FromInclusive] DECIMAL (6, 3),
+	[ToInclusive] DECIMAL (6, 3),
+
+    [WorseTotalCount] INT DEFAULT 0,
+    [SimilarTotalCount] INT DEFAULT 0,
+    [BetterTotalCount] INT DEFAULT 0,
+
+    [WorseMenCount] INT DEFAULT 0,
+    [SimilarMenCount] INT DEFAULT 0,
+    [BetterMenCount] INT DEFAULT 0,
+
+    [WorseWomenCount] INT DEFAULT 0,
+    [SimilarWomenCount] INT DEFAULT 0,
+    [BetterWomenCount] INT DEFAULT 0,
+
+	[Min] DECIMAL (6, 3),
+	[Max] DECIMAL (6, 3),
+
+	CONSTRAINT [PK_SuccessRate_Id] PRIMARY KEY CLUSTERED ([Id]),
+    CONSTRAINT [FK_SuccessRate_ExamAbbreviationId] FOREIGN KEY ([ExamAbbreviationId]) REFERENCES [Application].[ExamAbbreviation] ([Id]),
+    CONSTRAINT [FK_SuccessRate_SchoolYearId] FOREIGN KEY ([SchoolYearId]) REFERENCES [Application].[SchoolYear] ([Id]),
+    CONSTRAINT [FK_SuccessRate_SubjectAbbreviationId] FOREIGN KEY ([SubjectAbbreviationId]) REFERENCES [Application].[SubjectAbbreviation] ([Id])
 );
 GO
 

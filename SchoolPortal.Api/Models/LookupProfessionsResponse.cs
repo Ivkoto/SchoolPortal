@@ -6,10 +6,10 @@
         public List<ProfessionModel> Professions { get; set; } = [];
     }
     public record ProfessionModel
-    {
-        public int Id { get; set; }
-        public int ExternalId { get; set; }
-        public string Name { get; set; }
-        public int ProfessionalDirectionId { get; set; }
-    }
+    (
+        int Id,
+        int ExternalId,
+        string Name,
+        int ProfessionalDirectionId
+    );
 }
