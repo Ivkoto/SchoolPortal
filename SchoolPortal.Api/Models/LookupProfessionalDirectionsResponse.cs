@@ -7,10 +7,10 @@
     }
 
     public record ProfessionalDirectionModel
-    {
-        public int Id { get; set; }
-        public int ExternalId { get; set; }
-        public string Name { get; set; }
-        public int ScienceId { get; set; }
-    }
+    (
+        int Id,
+        int ExternalId,
+        string Name,
+        int ScienceId
+    );
 }

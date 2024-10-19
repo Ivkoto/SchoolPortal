@@ -7,9 +7,11 @@
     }
 
     public record SpecialtyModel
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-    }
+    (
+        int Id,
+        int ExternalId,
+        string Name,
+        bool IsProfessional,
+        int ProfessionId
+    );
 }

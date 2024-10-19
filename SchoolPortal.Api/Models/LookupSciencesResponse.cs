@@ -7,9 +7,9 @@
     }
 
     public record ScienceModel
-    {
-        public int Id { get; set; }
-        public int ExternalId { get; set; }
-        public string Name { get; set; }
-    }
+    (
+        int Id,
+        int ExternalId,
+        string Name
+    );
 }

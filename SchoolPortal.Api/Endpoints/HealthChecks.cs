@@ -24,6 +24,6 @@ namespace SchoolPortal.Api.Endpoints
         internal async Task<IResult> PingDetails(IApiHealthCheckRepository service, CancellationToken cancellationToken)
         {
             return await service.PingDetails(cancellationToken);
-        }        
+        }
     }
 }

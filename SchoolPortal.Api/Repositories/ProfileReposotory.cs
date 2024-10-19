@@ -8,17 +8,20 @@ namespace SchoolPortal.Api.Repositories
     public interface IProfileRepository
     {
         Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters);
+        Task<ProfileModel> GetProfileById(int profileId);
         Task<List<ScienceModel>> GetAllSciences();
         Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
         Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId);
         Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId);
+        Task<List<ExamStageScoresModel>> GetAllExamStageScores(int ProfileId, int SchoolYear);
     }
+
     public class ProfileRepository : IProfileRepository
     {
         private readonly Serilog.ILogger logger;
         private readonly IDbConnectionFactory connectionFactory;
 
-        public ProfileRepository(IConfiguration configuration, Serilog.ILogger logger, IDbConnectionFactory connectionFactory)
+        public ProfileRepository(Serilog.ILogger logger, IDbConnectionFactory connectionFactory)
         {
             this.logger = logger;
             this.connectionFactory = connectionFactory;
@@ -27,30 +30,12 @@ namespace SchoolPortal.Api.Repositories
         public async Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters)
         {
             var connection = await connectionFactory.CreateConnectionAsync();
-
             var parameters = new DynamicParameters();
 
-            parameters.Add("@Area", filters.Area ?? (object)DBNull.Value, DbType.String);
-            parameters.Add("@Settlement", filters.Settlement ?? (object)DBNull.Value, DbType.String);
-            parameters.Add("@Region", filters.Region ?? (object)DBNull.Value, DbType.String);
-            parameters.Add("@Neighbourhood", filters.Neighbourhood ?? (object)DBNull.Value, DbType.String);
-            parameters.Add("@SchoolYear", filters.SchoolYear ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@SchoolYear", filters.SchoolYear, DbType.Int32);
             parameters.Add("@Grade", filters.Grade ?? (object)DBNull.Value, DbType.Int32);
-
-            if (filters.ProfileType is not null)
-            {
-                var isProfessional = filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional ? 1 : 0;
-                parameters.Add("@IsProfessional", isProfessional, DbType.Int32);
-            }
-            else
-            { 
-                parameters.Add("@IsProfessional", (object)DBNull.Value, DbType.Int32);
-            }
-
-            parameters.Add("@SpecialtyId", filters.SpecialtyId ?? (object)DBNull.Value, DbType.Int32);
-            parameters.Add("@ProfessionId", filters.ProfessionId ?? (object)DBNull.Value, DbType.Int32);
-            parameters.Add("@ProfessionalDirectionId", filters.ProfessionalDirectionId ?? (object)DBNull.Value, DbType.Int32);
-            parameters.Add("@ScienceId", filters.ScienceId ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@Settlement", filters.Settlement ?? (object)DBNull.Value, DbType.String);
+            parameters.Add("@Neighbourhood", filters.Neighbourhood ?? (object)DBNull.Value, DbType.String);
 
             if (filters.GeoLocationFilter != null)
             {
@@ -59,11 +44,38 @@ namespace SchoolPortal.Api.Repositories
                 parameters.Add("@Radius", filters.GeoLocationFilter.Radius, DbType.Decimal);
             }
 
+            if (filters.ProfileType is not null)
+            {
+                var isProfessional = filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional ? 1 : 0;
+                parameters.Add("@IsProfessional", isProfessional, DbType.Int32);
+            }
+            else
+            {
+                parameters.Add("@IsProfessional", (object)DBNull.Value, DbType.Int32);
+            }
+
+            parameters.Add("@SpecialtyId", filters.SpecialtyId ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@ProfessionId", filters.ProfessionId ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@ProfessionalDirectionId", filters.ProfessionalDirectionId ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@ScienceId", filters.ScienceId ?? (object)DBNull.Value, DbType.Int32);
+
             return (await connection.QueryAsync<ProfileModel>(
                        sql: "[Application].[usp_GetFilteredProfiles]",
                        param: parameters,
                        commandType: CommandType.StoredProcedure
             )).ToList();
+        }
+
+        public async Task<ProfileModel> GetProfileById(int profileId)
+        {
+            var connection = await connectionFactory.CreateConnectionAsync();
+
+            var profile = await connection.QuerySingleOrDefaultAsync<ProfileModel>(
+                          sql: "[Application].[usp_GetProfileById]",
+                          param: new { profileId },
+                          commandType: CommandType.StoredProcedure);
+
+            return profile ?? throw new KeyNotFoundException($"No Profile found with the ID {profileId}");
         }
 
         public async Task<List<ScienceModel>> GetAllSciences()
@@ -112,6 +124,17 @@ namespace SchoolPortal.Api.Repositories
             return (await connection.QueryAsync<SpecialtyModel>(
                 sql: "[Application].[usp_SpecialtiesByProfessionId]",
                 param: parameters,
+                commandType: CommandType.StoredProcedure
+            )).ToList();
+        }
+
+        public async Task<List<ExamStageScoresModel>> GetAllExamStageScores(int profileId, int schoolYear)
+        {
+            var connection = await connectionFactory.CreateConnectionAsync();
+
+            return(await connection.QueryAsync<ExamStageScoresModel> (
+                sql: "[Application].[usp_ExamStageScoresByProfileId]",
+                param: new { ProfileId = profileId, SchoolYear = schoolYear },
                 commandType: CommandType.StoredProcedure
             )).ToList();
         }
