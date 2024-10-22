@@ -1,4 +1,4 @@
-CREATE OR ALTER VIEW [Application].[uv_ProfileExamStageScores] AS
+CREATE OR ALTER VIEW [Application].[uv_ProfileExamStagesScores] AS
 SELECT 
     stage.[Id]			AS StageId,
     stage.[StageNumber],

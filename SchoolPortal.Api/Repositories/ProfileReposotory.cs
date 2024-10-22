@@ -7,7 +7,7 @@ namespace SchoolPortal.Api.Repositories
 {
     public interface IProfileRepository
     {
-        Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters);
+        Task<List<ProfileModel>> GetFilteredProfiles(GetFilteredProfilesRequest filters);
         Task<ProfileModel> GetProfileById(int profileId);
         Task<List<ScienceModel>> GetAllSciences();
         Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
@@ -27,13 +27,13 @@ namespace SchoolPortal.Api.Repositories
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task<List<ProfileModel>> GetFilteredProfiles(LookupProfilesRequest filters)
+        public async Task<List<ProfileModel>> GetFilteredProfiles(GetFilteredProfilesRequest filters)
         {
             var connection = await connectionFactory.CreateConnectionAsync();
             var parameters = new DynamicParameters();
 
             parameters.Add("@SchoolYear", filters.SchoolYear, DbType.Int32);
-            parameters.Add("@Grade", filters.Grade ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@Grade", filters.Grade, DbType.Int32);
             parameters.Add("@Settlement", filters.Settlement ?? (object)DBNull.Value, DbType.String);
             parameters.Add("@Neighbourhood", filters.Neighbourhood ?? (object)DBNull.Value, DbType.String);
 
@@ -46,7 +46,7 @@ namespace SchoolPortal.Api.Repositories
 
             if (filters.ProfileType is not null)
             {
-                var isProfessional = filters.ProfileType.ToLower() == CustomEnums.ProfileType.Professional ? 1 : 0;
+                var isProfessional = filters.ProfileType.ToLower() == CustomEnums.ProfileTypes.Professional ? 1 : 0;
                 parameters.Add("@IsProfessional", isProfessional, DbType.Int32);
             }
             else
@@ -60,9 +60,9 @@ namespace SchoolPortal.Api.Repositories
             parameters.Add("@ScienceId", filters.ScienceId ?? (object)DBNull.Value, DbType.Int32);
 
             return (await connection.QueryAsync<ProfileModel>(
-                       sql: "[Application].[usp_GetFilteredProfiles]",
-                       param: parameters,
-                       commandType: CommandType.StoredProcedure
+                    sql: "[Application].[usp_GetFilteredProfiles]",
+                    param: parameters,
+                    commandType: CommandType.StoredProcedure
             )).ToList();
         }
 
@@ -82,10 +82,9 @@ namespace SchoolPortal.Api.Repositories
         {
             var connection = await connectionFactory.CreateConnectionAsync();
 
-
             return (await connection.QueryAsync<ScienceModel>(
-                        sql: "[Application].[usp_GetAllSciences]",
-                        commandType: CommandType.StoredProcedure
+                    sql: "[Application].[usp_GetAllSciences]",
+                    commandType: CommandType.StoredProcedure
             )).ToList();
         }
 
@@ -95,9 +94,9 @@ namespace SchoolPortal.Api.Repositories
 
 
             return(await connection.QueryAsync<ProfessionalDirectionModel>(
-                sql: "[Application].[usp_ProfessionalDirectionsByScienceId]",
-                param: new { ScienceId = scienceId},
-                commandType: CommandType.StoredProcedure
+                   sql: "[Application].[usp_GetProfessionalDirectionsByScienceId]",
+                   param: new { ScienceId = scienceId},
+                   commandType: CommandType.StoredProcedure
             )).ToList();
         }
 
@@ -106,9 +105,9 @@ namespace SchoolPortal.Api.Repositories
             var connection = await connectionFactory.CreateConnectionAsync();
 
             return(await connection.QueryAsync<ProfessionModel>(
-                sql: "[Application].[usp_ProfessionsByProfessionalDirectionId]",
-                param: new { ProfessionalDirectionId = professionalDirectionId},
-                commandType: CommandType.StoredProcedure
+                   sql: "[Application].[usp_GetProfessionsByProfessionalDirectionId]",
+                   param: new { ProfessionalDirectionId = professionalDirectionId},
+                   commandType: CommandType.StoredProcedure
             )).ToList();
         }
 
@@ -122,9 +121,9 @@ namespace SchoolPortal.Api.Repositories
             parameters.Add("@ProfessionId", professionId > 0 ? professionId : (object)DBNull.Value, DbType.Int32);
 
             return (await connection.QueryAsync<SpecialtyModel>(
-                sql: "[Application].[usp_SpecialtiesByProfessionId]",
-                param: parameters,
-                commandType: CommandType.StoredProcedure
+                    sql: "[Application].[usp_GetSpecialtiesByProfessionId]",
+                    param: parameters,
+                    commandType: CommandType.StoredProcedure
             )).ToList();
         }
 
@@ -133,9 +132,9 @@ namespace SchoolPortal.Api.Repositories
             var connection = await connectionFactory.CreateConnectionAsync();
 
             return(await connection.QueryAsync<ExamStageScoresModel> (
-                sql: "[Application].[usp_ExamStageScoresByProfileId]",
-                param: new { ProfileId = profileId, SchoolYear = schoolYear },
-                commandType: CommandType.StoredProcedure
+                   sql: "[Application].[usp_GetExamStageScoresByProfileId]",
+                   param: new { ProfileId = profileId, SchoolYear = schoolYear },
+                   commandType: CommandType.StoredProcedure
             )).ToList();
         }
     }

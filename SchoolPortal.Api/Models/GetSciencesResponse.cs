@@ -1,8 +1,8 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record LookupSciencesResponse
+    public record GetSciencesResponse
     {
-        public int ScienceCount { get; set; } = 0;
+        public int SciencesCount { get; set; } = 0;
         public List<ScienceModel> Sciences { get; set; } = [];
     }
 

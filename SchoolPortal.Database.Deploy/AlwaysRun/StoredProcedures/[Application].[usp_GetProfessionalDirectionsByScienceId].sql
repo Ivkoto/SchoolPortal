@@ -1,4 +1,4 @@
-CREATE OR ALTER PROC [Application].[usp_ProfessionalDirectionsByScienceId]
+CREATE OR ALTER PROC [Application].[usp_GetProfessionalDirectionsByScienceId]
 	@ScienceId INT
 AS
 BEGIN

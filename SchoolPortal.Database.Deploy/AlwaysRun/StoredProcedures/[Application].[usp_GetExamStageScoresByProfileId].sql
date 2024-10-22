@@ -1,4 +1,4 @@
-CREATE OR ALTER PROC [Application].[usp_ExamStageScoresByProfileId]
+CREATE OR ALTER PROC [Application].[usp_GetExamStageScoresByProfileId]
 	@ProfileId	INT,
 	@SchoolYear INT
 AS
@@ -22,7 +22,7 @@ BEGIN
 		[MaxMaleScore],
 		[MaxFemaleScore]
 	FROM
-		[Application].[uv_ProfileExamStageScores]
+		[Application].[uv_ProfileExamStagesScores]
 	WHERE
 		[ProfileId] = @ProfileId AND [SchoolYear] = @SchoolYear
 END;

@@ -292,7 +292,7 @@ CREATE TABLE [Application].[SuccessRate]
     [AreSeparated] BIT DEFAULT 0,
 
 	[FromInclusive] DECIMAL (6, 3),
-	[ToInclusive] DECIMAL (6, 3),
+	[ToExclusive] DECIMAL (6, 3),
 
     [WorseTotalCount] INT DEFAULT 0,
     [SimilarTotalCount] INT DEFAULT 0,

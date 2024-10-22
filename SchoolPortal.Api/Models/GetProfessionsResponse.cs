@@ -1,8 +1,8 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record LookupProfessionsResponse
+    public record GetProfessionsResponse
     {
-        public int ProfessionCount { get; set; } = 0;
+        public int ProfessionsCount { get; set; } = 0;
         public List<ProfessionModel> Professions { get; set; } = [];
     }
     public record ProfessionModel

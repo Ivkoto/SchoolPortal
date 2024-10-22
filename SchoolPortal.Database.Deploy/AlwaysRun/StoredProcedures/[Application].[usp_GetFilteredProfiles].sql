@@ -1,6 +1,6 @@
 CREATE OR ALTER PROC [Application].[usp_GetFilteredProfiles]
-    @SchoolYear              INT			= NULL,
-    @Grade                   INT			= NULL,
+    @SchoolYear              INT,
+    @Grade                   INT,
     @Settlement              NVARCHAR(300)	= NULL,
     @Neighbourhood           NVARCHAR(300)	= NULL,
     @Latitude                DECIMAL(17, 15) = NULL,
@@ -60,8 +60,8 @@ BEGIN
         GeoLongitude
     FROM [Application].[uv_ProfileDetails]
     WHERE
-            (@SchoolYear IS NULL                OR SchoolYear = @SchoolYear)
-        AND (@Grade IS NULL                     OR Grade = @Grade)
+            (SchoolYear = @SchoolYear)
+        AND (Grade      = @Grade)
         AND (@IsProfessional IS NULL            OR IsProfessional = @IsProfessional)
         AND (@SpecialtyId IS NULL               OR SpecialtyId = @SpecialtyId)
         AND (@ProfessionId IS NULL              OR ProfessionId = @ProfessionId)

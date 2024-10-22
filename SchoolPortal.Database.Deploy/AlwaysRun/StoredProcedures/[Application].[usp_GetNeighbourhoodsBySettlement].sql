@@ -1,4 +1,4 @@
-CREATE OR ALTER PROC [Application].[usp_NeighbourhoodsBySettlement]
+CREATE OR ALTER PROC [Application].[usp_GetNeighbourhoodsBySettlement]
 	@Settlement NVARCHAR(100)
 AS
 BEGIN

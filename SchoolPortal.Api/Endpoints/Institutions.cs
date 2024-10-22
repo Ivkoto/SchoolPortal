@@ -1,8 +1,7 @@
-﻿using FluentValidation;
+﻿//using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
-using SchoolPortal.Api.Validation;
 
 namespace SchoolPortal.Api.Endpoints
 {
@@ -16,26 +15,18 @@ namespace SchoolPortal.Api.Endpoints
 
             app.MapGet("/institutions/{institutionId:int}/profiles", GetInstitutionProfiles)
                 .WithName("GetInstitutionProfiles")
-                .Produces<LookupProfilesResponse>(StatusCodes.Status200OK);
+                .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
         }
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddSingleton<IInstitutionRepository, InstitutionRepository>();
-            services.AddScoped<IValidator<int>, InstitutionIdValidator>();
+            services.AddScoped<IInstitutionRepository, InstitutionRepository>();
         }
 
         internal async Task<IResult> GetInstitutionById(
             int institutionId,
-            [FromServices] IInstitutionRepository service,
-            [FromServices] IValidator<int> institutionsIdValidator)
+            [FromServices] IInstitutionRepository service)
         {
-            var validationResult = await institutionsIdValidator.ValidateAsync(institutionId);
-            if (!validationResult.IsValid)
-            {
-                return Results.ValidationProblem(validationResult.ToDictionary());
-            }
-
             var currentInstitution = await service.GetInstitutionAsync(institutionId);
 
             return Results.Ok(currentInstitution);
@@ -45,22 +36,17 @@ namespace SchoolPortal.Api.Endpoints
             int institutionId,
             [FromQuery] int schoolYear,
             [FromQuery] int? grade,
-            [FromServices] IInstitutionRepository service,
-            [FromServices] IValidator<int> institutionsIdValidator)
+            [FromServices] IInstitutionRepository service)
         {
-            var validationResult = await institutionsIdValidator.ValidateAsync(institutionId);
-            if (!validationResult.IsValid)
-            {
-                return Results.ValidationProblem(validationResult.ToDictionary());
-            }
-
             var profiles = await service.GetInstitutionProfiles(institutionId, schoolYear, grade);
 
-            return Results.Ok(new LookupProfilesResponse
-            {
-                ProfileCount = profiles.Count,
-                Profiles = profiles
-            });
+            return Results.Ok(
+                new GetFilteredProfilesResponse
+                {
+                    ProfilesCount = profiles.Count,
+                    Profiles = profiles
+                }
+            );
         }
     }
 }
