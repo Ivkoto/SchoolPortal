@@ -1,4 +1,4 @@
-CREATE OR ALTER PROC [Application].[usp_ProfessionsByProfessionalDirectionId]
+CREATE OR ALTER PROC [Application].[usp_GetProfessionsByProfessionalDirectionId]
 	@ProfessionalDirectionId INT
 AS
 BEGIN

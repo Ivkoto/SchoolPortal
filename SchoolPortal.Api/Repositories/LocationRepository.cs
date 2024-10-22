@@ -22,10 +22,10 @@ namespace SchoolPortal.Api.Repositories
         {
             var connection = await connectionFactory.CreateConnectionAsync();
 
-            return(await connection.QueryAsync<NeighbourhoodModel>(
-                sql: "[Application].[usp_NeighbourhoodsBySettlement]",
-                param: new { settlement },
-                commandType: System.Data.CommandType.StoredProcedure
+            return (await connection.QueryAsync<NeighbourhoodModel>(
+                   sql: "[Application].[usp_GetNeighbourhoodsBySettlement]",
+                   param: new { settlement },
+                   commandType: System.Data.CommandType.StoredProcedure
             )).ToList();
         }
     }

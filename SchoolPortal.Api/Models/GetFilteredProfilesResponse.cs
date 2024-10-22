@@ -1,8 +1,8 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record LookupProfilesResponse
+    public record GetFilteredProfilesResponse
     {
-        public int ProfileCount { get; set; } = 0;
+        public int ProfilesCount { get; set; } = 0;
         public List<ProfileModel> Profiles { get; set; } = [];
     }    
 }

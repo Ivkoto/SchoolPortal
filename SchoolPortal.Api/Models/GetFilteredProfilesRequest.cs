@@ -1,12 +1,12 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record LookupProfilesRequest
+    public record GetFilteredProfilesRequest
     (
         int SchoolYear,
-        int? Grade,
+        int Grade,
         string? Settlement,
         string? Neighbourhood,
-        GeoLocationRequest? GeoLocationFilter,
+        GeoLocationModel? GeoLocationFilter,
         string? ProfileType,
         int? SpecialtyId,
         int? ProfessionId,
@@ -14,7 +14,7 @@
         int? ScienceId
     );
 
-    public record GeoLocationRequest
+    public record GeoLocationModel
     (
         decimal? Latitude,
         decimal? Longitude,

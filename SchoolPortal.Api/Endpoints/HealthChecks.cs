@@ -12,7 +12,7 @@ namespace SchoolPortal.Api.Endpoints
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddSingleton<IApiHealthCheckRepository, ApiHealthCheckRepository>();
+            services.AddScoped<IApiHealthCheckRepository, ApiHealthCheckRepository>();
             services.AddHealthChecks();
         }
 

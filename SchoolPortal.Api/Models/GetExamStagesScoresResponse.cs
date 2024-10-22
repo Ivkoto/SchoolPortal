@@ -1,6 +1,6 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record ExamStageScoresResponse
+    public record GetExamStagesScoresResponse
     {
         public int StagesCount { get; set; } = 0;
         public List<ExamStageScoresModel> ExamStageScores { get; set; } = [];

@@ -1,7 +1,7 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using SchoolPortal.Api.Extensions;
 using SchoolPortal.Api.Models;
-using System.Data;
 
 namespace SchoolPortal.Api.Repositories
 {
@@ -25,9 +25,9 @@ namespace SchoolPortal.Api.Repositories
             var connection = await connectionFactory.CreateConnectionAsync();
 
             var institution = await connection.QuerySingleOrDefaultAsync<InstitutionModel>(
-                              sql: "[Application].[usp_InstitutionById]",
+                              sql: "[Application].[usp_GetInstitutionById]",
                               param: new { institutionId },
-                              commandType: System.Data.CommandType.StoredProcedure);
+                              commandType: CommandType.StoredProcedure);
 
             return institution ?? throw new KeyNotFoundException($"No Institution found with the ID {institutionId}");
         }
@@ -42,9 +42,9 @@ namespace SchoolPortal.Api.Repositories
             parameters.Add("@Grade", grade ?? (object)DBNull.Value, DbType.Int32);
 
             return (await connection.QueryAsync<ProfileModel>(
-                       sql: "[Application].[usp_GetFilteredProfiles]",
-                       param: parameters,
-                       commandType: CommandType.StoredProcedure
+                    sql: "[Application].[usp_GetFilteredProfiles]",
+                    param: parameters,
+                    commandType: CommandType.StoredProcedure
             )).ToList();
         }
     }

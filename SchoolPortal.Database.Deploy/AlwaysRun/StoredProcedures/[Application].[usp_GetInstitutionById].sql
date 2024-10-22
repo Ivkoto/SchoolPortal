@@ -1,4 +1,4 @@
-CREATE OR ALTER PROC [Application].[usp_InstitutionById]
+CREATE OR ALTER PROC [Application].[usp_GetInstitutionById]
 	@InstitutionId INT
 AS
 BEGIN

@@ -12,7 +12,7 @@ namespace SchoolPortal.Api.Endpoints
         {
             app.MapPost("/profiles/lookup", GetFilteredProfiles)
                .WithName("GetFilteredProfiles")
-               .Produces<LookupProfilesResponse>(StatusCodes.Status200OK);
+               .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
 
             app.MapGet("/profiles/{profileId:int}", GetProfileById)
                 .WithName("GetProfileById")
@@ -20,40 +20,39 @@ namespace SchoolPortal.Api.Endpoints
 
             app.MapGet("/profiles/sciences", GetSciences)
                 .WithName("GetSciences")
-                .Produces<LookupSciencesResponse>(StatusCodes.Status200OK);
+                .Produces<GetSciencesResponse>(StatusCodes.Status200OK);
 
             app.MapGet("/profiles/professional-directions/{scienceId:int}", GetProfessionalDirections)
                 .WithName("GetProfessionalDirections")
-                .Produces<LookupProfessionalDirectionsResponse>(StatusCodes.Status200OK);
+                .Produces<GetProfessionalDirectionsResponse>(StatusCodes.Status200OK);
 
             app.MapGet("/profiles/professions/{ProfessionalDirectionId:int}", GetProfessions)
                 .WithName("GetProfessions")
-                .Produces<LookupProfessionsResponse>(StatusCodes.Status200OK);
+                .Produces<GetProfessionsResponse>(StatusCodes.Status200OK);
 
             app.MapGet("/profiles/specialties/{professionId:int}", GetSpecialties)
                 .WithName("GetSpecialties")
-                .Produces<LookupSpecialtyResponse>(StatusCodes.Status200OK);
+                .Produces<GetSpecialtiesResponse>(StatusCodes.Status200OK);
 
             app.MapGet("/profiles/{profileId:int}/exam-stages/{schoolYear:int}", GetExamStagesScores)
                 .WithName("GetExamStagesScores")
-                .Produces<ExamStageScoresResponse>(StatusCodes.Status200OK);
+                .Produces<GetExamStagesScoresResponse>(StatusCodes.Status200OK);
         }
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddSingleton<IProfileRepository, ProfileRepository>();
-            services.AddScoped<IValidator<LookupProfilesRequest>, LookupProfilesValidator>();
-            services.AddScoped<IValidator<GeoLocationRequest>, GeoLocationValidator>();
-            services.AddScoped<IValidator<(int profileId, int schoolYear)>, ProfileExamStageValidator>();
+            services.AddScoped<IProfileRepository, ProfileRepository>();
+            services.AddTransient<IValidator<GetFilteredProfilesRequest>, ProfileValidator>();
+            services.AddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();            
         }
 
         internal async Task<IResult> GetFilteredProfiles(
-            [FromBody] LookupProfilesRequest filters,
+            [FromBody] GetFilteredProfilesRequest filters,
             [FromServices] IProfileRepository service,
-            [FromServices] IValidator<LookupProfilesRequest> filtersValidator,
-            [FromServices] IValidator<GeoLocationRequest> locationValidator)
+            [FromServices] IValidator<GetFilteredProfilesRequest> filtersValidator,
+            [FromServices] IValidator<GeoLocationModel> locationValidator)
         {
-            var filtersValidationResult = filtersValidator.Validate(filters);
+            var filtersValidationResult = await filtersValidator.ValidateAsync(filters);
             if (!filtersValidationResult.IsValid)
             {
                 return Results.ValidationProblem(filtersValidationResult.ToDictionary());
@@ -68,29 +67,23 @@ namespace SchoolPortal.Api.Endpoints
                 }
             }
 
-            if (filters.ProfileType is not null)
-            {
-                var profileValidationResult = await filtersValidator.ValidateAsync(filters);
-                if (!profileValidationResult.IsValid)
-                {
-                    return Results.ValidationProblem(profileValidationResult.ToDictionary());
-                }
-            }
-
             var profiles = await service.GetFilteredProfiles(filters);
 
-            return Results.Ok(new LookupProfilesResponse
-            {
-                ProfileCount = profiles.Count,
-                Profiles = profiles
-            });
+            return Results.Ok(
+                new GetFilteredProfilesResponse
+                {
+                    ProfilesCount = profiles.Count,
+                    Profiles = profiles
+                }
+            );
         }
 
         internal async Task<IResult> GetProfileById(
-            int profileId, [FromServices] IProfileRepository service)
+            int profileId,
+            [FromServices] IProfileRepository service)
         {
             var currentProfile = await service.GetProfileById(profileId);
-
+            
             return Results.Ok(currentProfile);
         }
 
@@ -99,66 +92,74 @@ namespace SchoolPortal.Api.Endpoints
         {
             var sciences = await service.GetAllSciences();
 
-            return Results.Ok(new LookupSciencesResponse
-            {
-                ScienceCount = sciences.Count,
-                Sciences = sciences
-            });
+            return Results.Ok(
+                new GetSciencesResponse
+                {
+                    SciencesCount = sciences.Count,
+                    Sciences = sciences
+                }
+            );
         }
 
         internal async Task<IResult> GetProfessionalDirections(
-            int scienceId, [FromServices] IProfileRepository service)
+            int scienceId,
+            [FromServices] IProfileRepository service)
         {
             var professionalDirections = await service.GetProfessionalDirectionsByScienceId(scienceId);
 
-            return Results.Ok(new LookupProfessionalDirectionsResponse
-            {
-                ProfessionalDirectionCount = professionalDirections.Count,
-                ProfessionalDirections = professionalDirections
-            });
+            return Results.Ok(
+                new GetProfessionalDirectionsResponse
+                {
+                    ProfessionalDirectionsCount = professionalDirections.Count,
+                    ProfessionalDirections = professionalDirections
+                }
+            );
         }
 
         internal async Task<IResult> GetProfessions(
-            int professionalDirectionId, [FromServices] IProfileRepository service)
+            int professionalDirectionId,
+            [FromServices] IProfileRepository service)
         {
             var professions = await service.GetProfessionsByProfessionalDirectionId(professionalDirectionId);
 
-            return Results.Ok(new LookupProfessionsResponse
-            {
-                ProfessionCount = professions.Count,
-                Professions = professions
-            });
+            return Results.Ok(
+                new GetProfessionsResponse
+                {
+                    ProfessionsCount = professions.Count,
+                    Professions = professions
+                }
+            );
         }
 
         internal async Task<IResult> GetSpecialties(
-            int professionId, [FromServices] IProfileRepository service)
+            int professionId,
+            [FromServices] IProfileRepository service)
         {
             var specialties = await service.GetSpecialtiesByProfessionId(professionId);
 
-            return Results.Ok(new LookupSpecialtyResponse
-            {
-                SpecialtyCount = specialties.Count,
-                Specialties = specialties
-            });
+            return Results.Ok(
+                new GetSpecialtiesResponse
+                {
+                    SpecialtesCount = specialties.Count,
+                    Specialties = specialties
+                }
+            );
         }
 
         internal async Task<IResult> GetExamStagesScores(
-            int profileId, int schoolYear,
-            [FromServices] IProfileRepository service,
-            [FromServices] IValidator<(int profileId, int schoolYear)> validator)
+            int profileId,
+            int schoolYear,
+            [FromServices] IProfileRepository service)
         {
-            var validationResult = validator.Validate((profileId, schoolYear));
-            if (!validationResult.IsValid)
-            {
-                return Results.ValidationProblem(validationResult.ToDictionary());
-            }
-
             var scores = await service.GetAllExamStageScores(profileId, schoolYear);
 
-            return Results.Ok(new ExamStageScoresResponse{
-                StagesCount = scores.Count,
-                ExamStageScores = scores
-            });
+            return Results.Ok(
+                new GetExamStagesScoresResponse
+                {
+                    StagesCount = scores.Count,
+                    ExamStageScores = scores
+                }
+            );
         }
     }
 }

@@ -3,7 +3,7 @@ using SchoolPortal.Api.Models;
 
 namespace SchoolPortal.Api.Validation
 {
-    public class GeoLocationValidator : AbstractValidator<GeoLocationRequest>
+    public class GeoLocationValidator : AbstractValidator<GeoLocationModel>
     {
         public GeoLocationValidator()
         {
@@ -29,13 +29,13 @@ namespace SchoolPortal.Api.Validation
         }
     }
 
-    public class LookupProfilesValidator : AbstractValidator<LookupProfilesRequest>
+    public class ProfileValidator : AbstractValidator<GetFilteredProfilesRequest>
     {
-        public LookupProfilesValidator()
+        public ProfileValidator()
         {
             RuleFor(x => x.ProfileType)
                 .Must(IsValidProfileType)
-                .WithMessage($"Provided profile type must be either '{CustomEnums.ProfileType.Professional}' or '{CustomEnums.ProfileType.Profiled}'.");
+                .WithMessage($"Provided profile type must be either '{CustomEnums.ProfileTypes.Professional}' or '{CustomEnums.ProfileTypes.Profiled}', or it can be null.");
 
             RuleFor(x => x.SchoolYear)
                 .InclusiveBetween(2024, 2024)
@@ -44,24 +44,15 @@ namespace SchoolPortal.Api.Validation
             RuleFor(x => x.Settlement)
                 .Must(settlement => settlement != null && settlement.Equals("София", StringComparison.OrdinalIgnoreCase))
                 .WithMessage("Settlement must be София");
+
+            RuleFor(x => x.Grade)
+                .Must(grade => new[] { 5, 8, 11 }.Contains(grade))
+                .WithMessage("Grade must be one of the following: 5, 8, 11");
         }
 
         private bool IsValidProfileType(string? profileType)
-            => profileType?.Trim().ToLower() == CustomEnums.ProfileType.Professional
-            || profileType?.Trim().ToLower() == CustomEnums.ProfileType.Profiled;
-    }
-
-    public class ProfileExamStageValidator : AbstractValidator<(int profileId, int schoolYear)>
-    {
-        public ProfileExamStageValidator()
-        {
-            RuleFor(x => x.profileId)
-                .GreaterThan(0)
-                .WithMessage("ProfileId must be a positive integer.");
-
-            RuleFor(x => x.schoolYear)
-                .InclusiveBetween(2024, 2024)
-                .WithMessage("SchoolYear must be 2024.");
-        }
+            => profileType is null
+            || profileType.ToLower() == CustomEnums.ProfileTypes.Professional
+            || profileType.ToLower() == CustomEnums.ProfileTypes.Profiled;
     }
 }

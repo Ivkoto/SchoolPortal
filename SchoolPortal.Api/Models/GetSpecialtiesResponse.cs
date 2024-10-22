@@ -1,8 +1,8 @@
 ﻿namespace SchoolPortal.Api.Models
 {
-    public record LookupSpecialtyResponse
+    public record GetSpecialtiesResponse
     {
-        public int SpecialtyCount { get; set; } = 0;
+        public int SpecialtesCount { get; set; } = 0;
         public List<SpecialtyModel> Specialties { get; set; } = [];
     }
 

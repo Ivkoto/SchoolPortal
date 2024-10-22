@@ -1,5 +1,6 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Dapper;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SchoolPortal.Api.Extensions;
 
 namespace SchoolPortal.Api.Services
 {
@@ -14,12 +15,15 @@ namespace SchoolPortal.Api.Services
         private readonly IConfiguration configuration;
         private readonly Serilog.ILogger logger;
         private readonly HealthCheckService healthCheckService;
+        private readonly IDbConnectionFactory connectionFactory;
 
-        public ApiHealthCheckRepository(IConfiguration configuration, Serilog.ILogger logger, HealthCheckService healthCheckService)
+        public ApiHealthCheckRepository(IConfiguration configuration, Serilog.ILogger logger,
+            HealthCheckService healthCheckService, IDbConnectionFactory connectionFactory)
         {
             this.configuration = configuration;
             this.logger = logger;
             this.healthCheckService = healthCheckService;
+            this.connectionFactory = connectionFactory;
         }
 
         public async Task<IResult> Ping(CancellationToken cancellationToken)
@@ -39,12 +43,14 @@ namespace SchoolPortal.Api.Services
 
             var connectionString = configuration.GetConnectionString("DatabaseConnection");
 
-            var healthReport = await healthCheckService.CheckHealthAsync(c => c.Tags.Contains("Database"));
-            var databaseStatus = healthReport.Entries.FirstOrDefault(e => e.Key == "Database").Value.Status;
+            //TODO @IvayloK - Not in use at the moment. There are no tagged services with for now.
+            //var healthReport = await healthCheckService.CheckHealthAsync(c => c.Tags.Contains("Database"));
+            //var databaseStatus = healthReport.Entries.FirstOrDefault(e => e.Key == "Database").Value.Status;
 
             try
             {
-                await CheckDbConnection(connectionString, cancellationToken);
+                var connection = await connectionFactory.CreateConnectionAsync();
+                await connection.ExecuteAsync("Select 1", commandTimeout: null, transaction: null);
                 logger.Information(successMessage);
                 return TypedResults.Ok(successMessage);
             }
@@ -53,17 +59,6 @@ namespace SchoolPortal.Api.Services
                 logger.Error(errorMessage, e);
                 return TypedResults.Problem(detail: errorMessage, statusCode: 500);
             }
-        }
-
-        private async Task CheckDbConnection(
-            string connectionString,
-            CancellationToken cancellationToken)
-        {
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
-            var command = new SqlCommand("Select 1", connection);
-            await command.ExecuteNonQueryAsync(cancellationToken);
-            await connection.CloseAsync();
         }
     }
 }
