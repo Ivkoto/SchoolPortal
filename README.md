@@ -5,6 +5,10 @@
 
 SchoolPortal API provides access to various functionalities of the SchoolPortal system, including profiles, institutions, exam results, and more. This README offers a quick start guide and links to detailed documentation.
 
+## License
+
+**This project is licensed under the Devocean Solutions License - see the [LICENSE](LICENSE) file for details.**
+
 ## Quick Start
 
 ### Installation
@@ -18,14 +22,28 @@ SchoolPortal API provides access to various functionalities of the SchoolPortal 
 Here’s a simple example of how to interact with the API:
 
 ```bash
-curl -X GET https://api.schoolportal.com/Profiles/GetAll
-```
+curl -X POST https://eduapi.azurewebsites.net/profiles/lookup \
+
+  -H "Content-Type: application/json" \
+  -d '{
+      "schoolYear": 2024,
+      "grade": 8,
+      "settlement": "София",
+      "neighbourhood": null,
+      "geoLocationFilter": {
+          "latitude": 42.69158343249817,
+          "longitude": 23.326981836601483,
+          "radius": 1
+      },
+      "profileType": null,
+      "specialtyId": null,
+      "professionId": null,
+      "professionalDirectionId": null,
+      "scienceId": null
+  }'
+  ```
 
 ## Documentation
 
 - [API Documentation](docs/API.md) - Detailed information on the API endpoints, request/response formats, and more.
 - [Configuration](docs/CONFIGURATION.md) - Advanced configuration options (if applicable).
-
-## License
-
-This project is licensed under the Devocean Solutions License.
