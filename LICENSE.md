@@ -14,4 +14,4 @@ For licensing inquiries, please contact Devocean Solutions directly through our 
 
 ---
 
-![Devocean Solutions Logo](SchoolPortal.Api\wwwroot\DOlogo.png)
+![Devocean Solutions Logo](SchoolPortal.Api/wwwroot/DOlogo.png)
