@@ -7,7 +7,7 @@ SchoolPortal API provides access to various functionalities of the SchoolPortal 
 
 ## License
 
-**This project is licensed under the Devocean Solutions License - see the [LICENSE](LICENSE) file for details.**
+**This project is licensed under the Devocean Solutions License - see the [LICENSE.md](LICENSE) file for details.**
 
 ## Quick Start
 
