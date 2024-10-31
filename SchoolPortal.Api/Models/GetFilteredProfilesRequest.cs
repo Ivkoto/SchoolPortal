@@ -11,7 +11,9 @@
         int? SpecialtyId,
         int? ProfessionId,
         int? ProfessionalDirectionId,
-        int? ScienceId
+        int? ScienceId,
+        int? PageNumber,
+        int? PageSize
     );
 
     public record GeoLocationModel

@@ -7,7 +7,7 @@ namespace SchoolPortal.Api.Repositories
 {
     public interface IProfileRepository
     {
-        Task<List<ProfileModel>> GetFilteredProfiles(GetFilteredProfilesRequest filters);
+        Task<(List<ProfileModel> Profiles, int TotalPages)> GetFilteredProfiles(GetFilteredProfilesRequest filters);
         Task<ProfileModel> GetProfileById(int profileId);
         Task<List<ScienceModel>> GetAllSciences();
         Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
@@ -27,7 +27,7 @@ namespace SchoolPortal.Api.Repositories
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task<List<ProfileModel>> GetFilteredProfiles(GetFilteredProfilesRequest filters)
+        public async Task<(List<ProfileModel> Profiles, int TotalPages)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
         {
             var connection = await connectionFactory.CreateConnectionAsync();
             var parameters = new DynamicParameters();
@@ -58,12 +58,20 @@ namespace SchoolPortal.Api.Repositories
             parameters.Add("@ProfessionId", filters.ProfessionId ?? (object)DBNull.Value, DbType.Int32);
             parameters.Add("@ProfessionalDirectionId", filters.ProfessionalDirectionId ?? (object)DBNull.Value, DbType.Int32);
             parameters.Add("@ScienceId", filters.ScienceId ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@PageNumber", filters.PageNumber ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@PageSize", filters.PageSize ?? (object)DBNull.Value, DbType.Int32);
 
-            return (await connection.QueryAsync<ProfileModel>(
-                    sql: "[Application].[usp_GetFilteredProfiles]",
-                    param: parameters,
-                    commandType: CommandType.StoredProcedure
-            )).ToList();
+            using (var result = await connection.QueryMultipleAsync(
+                   sql: "[Application].[usp_GetFilteredProfiles]",
+                   param: parameters,
+                   commandType: CommandType.StoredProcedure))
+            {
+                var profiles = (await result.ReadAsync<ProfileModel>()).ToList();
+
+                int totalPages = await result.ReadFirstOrDefaultAsync<int>();
+
+                return (Profiles: profiles, TotalPages: totalPages);
+            }
         }
 
         public async Task<ProfileModel> GetProfileById(int profileId)
