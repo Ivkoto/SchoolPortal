@@ -2,13 +2,14 @@
 {
     public record ProfileModel
     {
-        public required int ProfileId { get; set; }
-        public required string ProfileName { get; set; }
+        public int ProfileId { get; set; }
+        public string ProfileName { get; set; }
         public string? ProfileType { get; set; }
         public int? Grade { get; set; }
         public string? StudyPeriod { get; set; }
-        public required int InstitutionId { get; set; }
-        public required string InstitutionFullName { get; set; }
+        public int InstitutionId { get; set; }
+        public string? InstitutionFullName { get; set; }
+        public string? InstitutionShortName { get; set; }
         public string? GradingFormulas { get; set; }
         public string? StudyMethod { get; set; }
         public string? EducationType { get; set; }

@@ -43,7 +43,7 @@ namespace SchoolPortal.Api.Endpoints
         {
             services.AddScoped<IProfileRepository, ProfileRepository>();
             services.AddTransient<IValidator<GetFilteredProfilesRequest>, ProfileValidator>();
-            services.AddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();            
+            services.AddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();  
         }
 
         internal async Task<IResult> GetFilteredProfiles(
@@ -67,13 +67,16 @@ namespace SchoolPortal.Api.Endpoints
                 }
             }
 
-            var profiles = await service.GetFilteredProfiles(filters);
+            var result = await service.GetFilteredProfiles(filters);
 
             return Results.Ok(
                 new GetFilteredProfilesResponse
                 {
-                    ProfilesCount = profiles.Count,
-                    Profiles = profiles
+                    ProfilesCount = result.Profiles.Count,
+                    Profiles = result.Profiles,
+                    PageNumber = filters.PageNumber ?? 1,
+                    PageSize = filters.PageSize ?? result.Profiles.Count,
+                    TotalPages = result.TotalPages
                 }
             );
         }

@@ -7,6 +7,7 @@ SELECT
 	p.[StudyPeriod] 					as StudyPeriod,
 	p.[SubInstitutionId]				as InstitutionId,
 	inst.[FullName]						as InstitutionFullName,
+	inst.[ShortName]					as InstitutionShortName,
 	pd.[GradingFormulas]				as GradingFormulas,
 	pd.[StudyMethod]					as StudyMethod,
 	pd.[EducatingType]					as EducationType,

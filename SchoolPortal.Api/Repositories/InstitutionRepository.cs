@@ -7,8 +7,9 @@ namespace SchoolPortal.Api.Repositories
 {
     public interface IInstitutionRepository
     {
-        Task<InstitutionModel> GetInstitutionAsync(int institutionId);
+        Task<InstitutionModel> GetInstitutionById(int institutionId);
         Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
+        Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade);
     }
 
     public class InstitutionRepository : IInstitutionRepository
@@ -20,7 +21,7 @@ namespace SchoolPortal.Api.Repositories
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task<InstitutionModel> GetInstitutionAsync(int institutionId)
+        public async Task<InstitutionModel> GetInstitutionById(int institutionId)
         {
             var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -43,6 +44,22 @@ namespace SchoolPortal.Api.Repositories
 
             return (await connection.QueryAsync<ProfileModel>(
                     sql: "[Application].[usp_GetFilteredProfiles]",
+                    param: parameters,
+                    commandType: CommandType.StoredProcedure
+            )).ToList();
+        }
+
+        public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade)
+        {
+            var connection = await connectionFactory.CreateConnectionAsync();
+            var parameters = new DynamicParameters();
+
+            parameters.Add("@InstitutionId", institutionId, DbType.Int32);
+            parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
+            parameters.Add("@Grade", grade, DbType.Int32);
+
+            return (await connection.QueryAsync<ExamResultModel>(
+                    sql: "[Application].[usp_GetExamResults]",
                     param: parameters,
                     commandType: CommandType.StoredProcedure
             )).ToList();
