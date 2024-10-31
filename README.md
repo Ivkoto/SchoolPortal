@@ -17,6 +17,7 @@ SchoolPortal API provides access to various functionalities of the SchoolPortal 
 2. Install dependencies.
 3. Run the application.
 
+
 ### Example Usage
 
 Here’s a simple example of how to interact with the API:
@@ -39,7 +40,9 @@ curl -X POST https://eduapi.azurewebsites.net/profiles/lookup \
       "specialtyId": null,
       "professionId": null,
       "professionalDirectionId": null,
-      "scienceId": null
+      "scienceId": null,
+      "pageNumber": null,
+      "pageSize": null
   }'
   ```
 
