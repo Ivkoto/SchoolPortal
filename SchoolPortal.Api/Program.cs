@@ -1,19 +1,14 @@
 ﻿using SchoolPortal.Api.Endpoints;
 using SchoolPortal.Api.Extensions;
-using SchoolPortal.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddConfiguration();
-builder.Services.AddLogger();
+builder.Services.ServiceCollectionExtensions();
 builder.Services.AddEndpoints(typeof(IEndpoint));
-builder.Services.AddSingleton<IDbConnectionFactory>(
-    _ => new DbConnectionFactory(builder.Configuration.GetConnectionString("DatabaseConnection")!));
 
 var app = builder.Build();
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseMiddleware<RequestLoggingMiddleware>();
+app.WebApplicationExtensions();
 app.UseEndpoints();
 
 app.MapGet("/", async context =>

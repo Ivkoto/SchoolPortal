@@ -6,8 +6,8 @@ namespace SchoolPortal.Api.Endpoints
     {
         public void MapEndpoints(WebApplication app)
         {
-            app.MapGet("/ping", Ping);
-            app.MapGet("/ping/details", PingDetails);
+            app.MapGet("/api/v1/ping", Ping);
+            app.MapGet("/api/v1/ping/details", PingDetails);
         }
 
         public void MapServices(IServiceCollection services)

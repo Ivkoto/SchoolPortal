@@ -17,6 +17,7 @@
         int ProfileId,
         string ProfileName,
         int SchoolYear,
+        bool IsClosed,
         decimal MinTotalScore,
         decimal MinMaleScore,
         decimal MinFemaleScore,

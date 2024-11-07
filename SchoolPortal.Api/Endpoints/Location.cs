@@ -9,7 +9,7 @@ namespace SchoolPortal.Api.Endpoints
     {
         public void MapEndpoints(WebApplication app)
         {
-            app.MapGet("/location/neighbourhoods/{settlement}", GetNeighbourhoods)
+            app.MapGet("/api/v1/location/neighbourhoods/{settlement}", GetNeighbourhoods)
                 .WithName("GetNeighbourhoods")
                 .Produces<GetNeighbourhoodsResponse>(StatusCodes.Status200OK);
         }
@@ -21,8 +21,11 @@ namespace SchoolPortal.Api.Endpoints
 
         internal async Task<IResult> GetNeighbourhoods(
             string settlement,
+            HttpContext httpContext,
             [FromServices] ILocationRepository service)
         {
+            httpContext.Response.Headers["Deprecated"] = "False";
+
             var neighbourhoods = await service.GetNeighbourhoodsBySettlement(settlement);
 
             return Results.Ok(

@@ -17,6 +17,7 @@
         public string? FirstForeignLanguage { get; set; }
         public int SchoolYear { get; set; }
         public bool IsPaperOnly { get; set; }
+        public bool IsClosed { get; set; }
         public int? ExternalId { get; set; }
         public int? QuotasTotal { get; set; }
         public int? QuotasMale { get; set; }
@@ -28,7 +29,6 @@
         public bool IsProtected { get; set; }
         public bool HasExpectedShortage { get; set; }
         public bool IsProfessional { get; set; }
-        public string? SpecialtyDescription { get; set; }
         public int? ProfessionId { get; set; }
         public string? Profession { get; set; }
         public int? ProfessionExternalId { get; set; }

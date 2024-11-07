@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
 
@@ -8,15 +9,15 @@ namespace SchoolPortal.Api.Endpoints
     {
         public void MapEndpoints(WebApplication app)
         {
-            app.MapGet("/institutions/{institutionId:int}", GetInstitutionById)
+            app.MapGet("/api/v1/institutions/{institutionId:int}", GetInstitutionById)
                 .WithName("GetInstitutionById")
                 .Produces<InstitutionModel>(StatusCodes.Status200OK);
 
-            app.MapGet("/institutions/{institutionId:int}/profiles", GetInstitutionProfiles)
+            app.MapGet("/api/v1/institutions/{institutionId:int}/profiles", GetInstitutionProfiles)
                 .WithName("GetInstitutionProfiles")
                 .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
 
-            app.MapGet("/institutions/{institutionId:int}/average-successes", GetInstitutionAverageSuccesses)
+            app.MapGet("/api/v1/institutions/{institutionId:int}/average-successes", GetInstitutionAverageSuccesses)
                 .WithName("GetInstitutionAverageSuccesses")
                 .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
         }
@@ -28,8 +29,11 @@ namespace SchoolPortal.Api.Endpoints
 
         internal async Task<IResult> GetInstitutionById(
             int institutionId,
+            HttpContext httpContext,
             [FromServices] IInstitutionRepository service)
         {
+            httpContext.Response.Headers["Deprecated"] = "False";
+
             var currentInstitution = await service.GetInstitutionById(institutionId);
 
             return Results.Ok(currentInstitution);
@@ -37,10 +41,13 @@ namespace SchoolPortal.Api.Endpoints
 
         internal async Task<IResult> GetInstitutionProfiles(
             int institutionId,
+            HttpContext httpContext,
             [FromQuery] int schoolYear,
             [FromQuery] int? grade,
             [FromServices] IInstitutionRepository service)
         {
+            httpContext.Response.Headers["Deprecated"] = "False";
+
             var profiles = await service.GetInstitutionProfiles(institutionId, schoolYear, grade);
 
             return Results.Ok(
@@ -54,10 +61,13 @@ namespace SchoolPortal.Api.Endpoints
 
         internal async Task<IResult> GetInstitutionAverageSuccesses(
             int institutionId,
+            HttpContext httpContext,
             [FromQuery] int schoolYear,
             [FromQuery] int grade,
             [FromServices] IInstitutionRepository service)
         {
+            httpContext.Response.Headers["Deprecated"] = "False";
+
             var examResults = await service.GetInstitutionAverageSuccesses(institutionId, schoolYear, grade);
 
             return Results.Ok(
