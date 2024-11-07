@@ -46,8 +46,8 @@ namespace SchoolPortal.Api.Validation
                 .WithMessage("Settlement must be София");
 
             RuleFor(x => x.Grade)
-                .Must(grade => new[] { 5, 8, 11 }.Contains(grade))
-                .WithMessage("Grade must be one of the following: 5, 8, 11");
+                .Must(grade => new[] { 4, 7, 10 }.Contains(grade))
+                .WithMessage("Grade must be one of the following: 4, 7, 10");
         }
 
         private bool IsValidProfileType(string? profileType)

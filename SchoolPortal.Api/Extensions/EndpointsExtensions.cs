@@ -23,7 +23,7 @@ namespace SchoolPortal.Api.Extensions
                 endpointDefinition.MapServices(services);
             }
 
-            //try use service provider instead
+            //TODO @IvayloK try use service provider instead
             //services.AddSingleton(sp => Activator.CreateInstance(sp, asds))
 
             services.AddSingleton(endpointDefinitions as IReadOnlyCollection<IEndpoint>);

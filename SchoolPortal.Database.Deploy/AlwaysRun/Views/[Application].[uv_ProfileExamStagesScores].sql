@@ -5,6 +5,7 @@ SELECT
     stage.[FreePositionsTotal],
     stage.[FreePositionsMen],
     stage.[FreePositionsWomen],
+	stage.[IsClosed],
     stage.[IsAggregatedScore],
     stage.[ProfileId],
 	prof.[Name]			AS ProfileName,

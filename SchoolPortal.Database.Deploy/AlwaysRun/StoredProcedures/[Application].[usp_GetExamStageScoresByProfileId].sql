@@ -15,6 +15,7 @@ BEGIN
 		[ProfileId],
 		[ProfileName],
 		[SchoolYear],
+		[IsClosed],
 		[MinTotalScore],
 		[MinMaleScore],
 		[MinFemaleScore],

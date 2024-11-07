@@ -15,6 +15,7 @@ SELECT
 	pd.[FirstForeignLanguage]			as FirstForeignLanguage,
 	scy.[Year]							as SchoolYear,
 	pd.[IsPaperOnly]					as IsPaperOnly,
+	pd.[IsClosed]						as IsClosed,
 	pd.[ExternalId]						as ExternalId,
 	pd.[Quotas_Total]					as QuotasTotal,
 	pd.[Quotas_Male]					as QuotasMale,
