@@ -35,9 +35,37 @@ namespace SchoolPortal.Api.Extensions
 
             services.AddSingleton<Serilog.ILogger>(logger);
 
-            // Add Db Connection Factory
+            // Add DB Connection Factory
             services.AddSingleton<IDbConnectionFactory>(
                 _ => new DbConnectionFactory(configuration.GetConnectionString("DatabaseConnection")!));
+
+
+            // Add CORS configuration
+            var allowedOrigins = new[] {
+                "https://eduinfo.azurewebsites.net",
+                "https://eduinfo-dev.azurewebsites.net",
+                "http://localhost:3000"
+            };
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowedOriginsPolicy", policy =>
+                {
+                    policy.WithOrigins(allowedOrigins)
+                          .WithMethods("GET", "POST")
+                          .AllowAnyHeader()
+                          .SetPreflightMaxAge(TimeSpan.FromHours(2));
+                });
+
+                options.AddPolicy("PaginationPolicy", policy =>
+                {
+                    policy.WithOrigins(allowedOrigins)
+                          .WithMethods("GET", "POST")
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("X-Pagination")
+                          .SetPreflightMaxAge(TimeSpan.FromHours(2));
+                });
+            });
         }
 
         public static void WebApplicationExtensions(this WebApplication app)

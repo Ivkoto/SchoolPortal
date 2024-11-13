@@ -11,7 +11,8 @@ namespace SchoolPortal.Api.Endpoints
         {
             app.MapGet("/api/v1/location/neighbourhoods/{settlement}", GetNeighbourhoods)
                 .WithName("GetNeighbourhoods")
-                .Produces<GetNeighbourhoodsResponse>(StatusCodes.Status200OK);
+                .Produces<GetNeighbourhoodsResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
         }
 
         public void MapServices(IServiceCollection services)

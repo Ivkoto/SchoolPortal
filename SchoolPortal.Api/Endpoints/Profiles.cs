@@ -12,11 +12,13 @@ namespace SchoolPortal.Api.Endpoints
         {
             app.MapPost("/api/v1/profiles/lookup", GetFilteredProfiles)
                .WithName("GetFilteredProfilesV1")
-               .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
+               .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK)
+               .RequireCors("PaginationPolicy");
 
             app.MapGet("/api/v1/profiles/{profileId:int}", GetProfileById)
                 .WithName("GetProfileByIdV1")
-                .Produces<ProfileModel>(StatusCodes.Status200OK);
+                .Produces<ProfileModel>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/profiles/sciences", GetSciences)
                 .WithName("GetSciencesV1")
@@ -24,19 +26,23 @@ namespace SchoolPortal.Api.Endpoints
 
             app.MapGet("/api/v1/profiles/professional-directions/{scienceId:int}", GetProfessionalDirections)
                 .WithName("GetProfessionalDirectionsV1")
-                .Produces<GetProfessionalDirectionsResponse>(StatusCodes.Status200OK);
+                .Produces<GetProfessionalDirectionsResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/profiles/professions/{ProfessionalDirectionId:int}", GetProfessions)
                 .WithName("GetProfessionsV1")
-                .Produces<GetProfessionsResponse>(StatusCodes.Status200OK);
+                .Produces<GetProfessionsResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/profiles/specialties/{professionId:int}", GetSpecialties)
                 .WithName("GetSpecialtiesV1")
-                .Produces<GetSpecialtiesResponse>(StatusCodes.Status200OK);
+                .Produces<GetSpecialtiesResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/profiles/{profileId:int}/exam-stages/{schoolYear:int}", GetExamStagesScores)
                 .WithName("GetExamStagesScoresV1")
-                .Produces<GetExamStagesScoresResponse>(StatusCodes.Status200OK);
+                .Produces<GetExamStagesScoresResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
         }
 
         public void MapServices(IServiceCollection services)
@@ -46,7 +52,7 @@ namespace SchoolPortal.Api.Endpoints
             services.AddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();  
         }
 
-        internal async Task<IResult> GetFilteredProfiles(
+        public async Task<IResult> GetFilteredProfiles(
             HttpContext httpContext,
             [FromBody] GetFilteredProfilesRequest filters,
             [FromServices] IProfileRepository service,
@@ -54,7 +60,7 @@ namespace SchoolPortal.Api.Endpoints
             [FromServices] IValidator<GeoLocationModel> locationValidator)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
-            //TODO @IvayloK enable once you're going to deprecate some of the endpoints
+            //TODO @IvayloK: Enable once you deprecate endpoints
             //httpContext.Response.Headers["Deprecation-Message"] = "This API version is deprecated. Please use /api/v2/profiles/lookup.";
 
             var filtersValidationResult = await filtersValidator.ValidateAsync(filters);
@@ -74,6 +80,9 @@ namespace SchoolPortal.Api.Endpoints
 
             var result = await service.GetFilteredProfiles(filters);
 
+            var paginationHeader = $"PageNumber={filters.PageNumber ?? 1},PageSize={filters.PageSize ?? result.Profiles.Count},TotalPages={result.TotalPages}";
+            httpContext.Response.Headers["X-Pagination"] = paginationHeader;
+
             return Results.Ok(
                 new GetFilteredProfilesResponse
                 {
@@ -86,7 +95,7 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        internal async Task<IResult> GetProfileById(
+        public async Task<IResult> GetProfileById(
             int profileId,
             HttpContext httpContext,
             [FromServices] IProfileRepository service)
@@ -98,7 +107,7 @@ namespace SchoolPortal.Api.Endpoints
             return Results.Ok(currentProfile);
         }
 
-        internal async Task<IResult> GetSciences(
+        public async Task<IResult> GetSciences(
             HttpContext httpContext,
             [FromServices] IProfileRepository service)
         {
@@ -115,7 +124,7 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        internal async Task<IResult> GetProfessionalDirections(
+        public async Task<IResult> GetProfessionalDirections(
             int scienceId,
             HttpContext httpContext,
             [FromServices] IProfileRepository service)
@@ -133,7 +142,7 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        internal async Task<IResult> GetProfessions(
+        public async Task<IResult> GetProfessions(
             int professionalDirectionId,
             HttpContext httpContext,
             [FromServices] IProfileRepository service)
@@ -151,7 +160,7 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        internal async Task<IResult> GetSpecialties(
+        public async Task<IResult> GetSpecialties(
             int professionId,
             HttpContext httpContext,
             [FromServices] IProfileRepository service)
@@ -169,7 +178,7 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        internal async Task<IResult> GetExamStagesScores(
+        public async Task<IResult> GetExamStagesScores(
             int profileId,
             int schoolYear,
             HttpContext httpContext,
