@@ -10,6 +10,8 @@ var app = builder.Build();
 
 app.WebApplicationExtensions();
 app.UseEndpoints();
+app.UseCors("AllowedOriginsPolicy");
+
 
 app.MapGet("/", async context =>
 {

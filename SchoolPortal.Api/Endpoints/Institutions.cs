@@ -11,15 +11,18 @@ namespace SchoolPortal.Api.Endpoints
         {
             app.MapGet("/api/v1/institutions/{institutionId:int}", GetInstitutionById)
                 .WithName("GetInstitutionById")
-                .Produces<InstitutionModel>(StatusCodes.Status200OK);
+                .Produces<InstitutionModel>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/institutions/{institutionId:int}/profiles", GetInstitutionProfiles)
                 .WithName("GetInstitutionProfiles")
-                .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
+                .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
 
             app.MapGet("/api/v1/institutions/{institutionId:int}/average-successes", GetInstitutionAverageSuccesses)
                 .WithName("GetInstitutionAverageSuccesses")
-                .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK);
+                .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK)
+                .RequireCors("AllowedOriginsPolicy");
         }
 
         public void MapServices(IServiceCollection services)
