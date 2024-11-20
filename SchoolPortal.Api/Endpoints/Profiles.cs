@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
 using SchoolPortal.Api.Validation;
@@ -47,15 +48,15 @@ namespace SchoolPortal.Api.Endpoints
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddScoped<IProfileRepository, ProfileRepository>();
-            services.AddTransient<IValidator<GetFilteredProfilesRequest>, ProfileValidator>();
-            services.AddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();  
+            services.TryAddScoped<IProfileRepository, ProfileRepository>();
+            services.TryAddTransient<IValidator<GetFilteredProfilesRequest>, ProfileValidator>();
+            services.TryAddTransient<IValidator<GeoLocationModel>, GeoLocationValidator>();
         }
 
-        public async Task<IResult> GetFilteredProfiles(
+        internal async Task<IResult> GetFilteredProfiles(
             HttpContext httpContext,
             [FromBody] GetFilteredProfilesRequest filters,
-            [FromServices] IProfileRepository service,
+            [FromServices] IProfileRepository profilesRepository,
             [FromServices] IValidator<GetFilteredProfilesRequest> filtersValidator,
             [FromServices] IValidator<GeoLocationModel> locationValidator)
         {
@@ -78,7 +79,7 @@ namespace SchoolPortal.Api.Endpoints
                 }
             }
 
-            var result = await service.GetFilteredProfiles(filters);
+            var result = await profilesRepository.GetFilteredProfiles(filters);
 
             var paginationHeader = $"PageNumber={filters.PageNumber ?? 1},PageSize={filters.PageSize ?? result.Profiles.Count},TotalPages={result.TotalPages}";
             httpContext.Response.Headers["X-Pagination"] = paginationHeader;
@@ -95,25 +96,25 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        public async Task<IResult> GetProfileById(
+        internal async Task<IResult> GetProfileById(
             int profileId,
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var currentProfile = await service.GetProfileById(profileId);
-            
+            var currentProfile = await profilesRepository.GetProfileById(profileId);
+
             return Results.Ok(currentProfile);
         }
 
-        public async Task<IResult> GetSciences(
+        internal async Task<IResult> GetSciences(
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var sciences = await service.GetAllSciences();
+            var sciences = await profilesRepository.GetAllSciences();
 
             return Results.Ok(
                 new GetSciencesResponse
@@ -124,14 +125,14 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        public async Task<IResult> GetProfessionalDirections(
+        internal async Task<IResult> GetProfessionalDirections(
             int scienceId,
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var professionalDirections = await service.GetProfessionalDirectionsByScienceId(scienceId);
+            var professionalDirections = await profilesRepository.GetProfessionalDirectionsByScienceId(scienceId);
 
             return Results.Ok(
                 new GetProfessionalDirectionsResponse
@@ -142,14 +143,14 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        public async Task<IResult> GetProfessions(
+        internal async Task<IResult> GetProfessions(
             int professionalDirectionId,
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var professions = await service.GetProfessionsByProfessionalDirectionId(professionalDirectionId);
+            var professions = await profilesRepository.GetProfessionsByProfessionalDirectionId(professionalDirectionId);
 
             return Results.Ok(
                 new GetProfessionsResponse
@@ -160,14 +161,16 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        public async Task<IResult> GetSpecialties(
+        internal async Task<IResult> GetSpecialties(
             int professionId,
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var specialties = await service.GetSpecialtiesByProfessionId(professionId);
+            // If professionId is set to '0', it means we want to retrieve only the 'профилирани' specialties.
+            // If professionId is greater than 0, it means we are requesting 'професионални' specialties.
+            var specialties = await profilesRepository.GetSpecialtiesByProfessionId(professionId);
 
             return Results.Ok(
                 new GetSpecialtiesResponse
@@ -178,15 +181,15 @@ namespace SchoolPortal.Api.Endpoints
             );
         }
 
-        public async Task<IResult> GetExamStagesScores(
+        internal async Task<IResult> GetExamStagesScores(
             int profileId,
             int schoolYear,
             HttpContext httpContext,
-            [FromServices] IProfileRepository service)
+            [FromServices] IProfileRepository profilesRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var scores = await service.GetAllExamStageScores(profileId, schoolYear);
+            var scores = await profilesRepository.GetAllExamStageScores(profileId, schoolYear);
 
             return Results.Ok(
                 new GetExamStagesScoresResponse

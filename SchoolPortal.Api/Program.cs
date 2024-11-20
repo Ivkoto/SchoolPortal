@@ -1,10 +1,16 @@
-﻿using SchoolPortal.Api.Endpoints;
+﻿using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using SchoolPortal.Api.Endpoints;
 using SchoolPortal.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.ServiceCollectionExtensions();
+var configuration = builder.Configuration;
+
+builder.Services.ServiceCollectionExtensions(configuration);
 builder.Services.AddEndpoints(typeof(IEndpoint));
+builder.Services.AddHealthChecks()
+    .AddSqlServer(configuration.GetConnectionString("DatabaseConnection")!);
 
 var app = builder.Build();
 
@@ -12,6 +18,10 @@ app.WebApplicationExtensions();
 app.UseEndpoints();
 app.UseCors("AllowedOriginsPolicy");
 
+app.MapHealthChecks("/api/v1/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.MapGet("/", async context =>
 {

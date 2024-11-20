@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
 
@@ -17,17 +18,17 @@ namespace SchoolPortal.Api.Endpoints
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.TryAddScoped<ILocationRepository, LocationRepository>();
         }
 
         internal async Task<IResult> GetNeighbourhoods(
             string settlement,
             HttpContext httpContext,
-            [FromServices] ILocationRepository service)
+            [FromServices] ILocationRepository locationRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var neighbourhoods = await service.GetNeighbourhoodsBySettlement(settlement);
+            var neighbourhoods = await locationRepository.GetNeighbourhoodsBySettlement(settlement);
 
             return Results.Ok(
                 new GetNeighbourhoodsResponse

@@ -6,26 +6,36 @@ namespace SchoolPortal.Api.Extensions
 {
     public static class StartupExtensions
     {
-        private static IConfiguration? configuration;
+        // private static IConfiguration? configuration;
 
-        public static void ServiceCollectionExtensions(this IServiceCollection services)
+        public static void ServiceCollectionExtensions(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add Configuration
-            configuration = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .Build();
+            AddSwager(services);
+            AddLogger(services, configuration);
+            AddCors(services, configuration);
 
-            services.AddSingleton(configuration);
+            services.AddSingleton<IDbConnectionFactory>(
+                _ => new DbConnectionFactory(configuration.GetConnectionString("DatabaseConnection")!));
+        }
 
-            // Add Swager
+        public static void WebApplicationExtensions(this WebApplication app)
+        {
+            ConfigureSwager(app);
+            ConfigureMiddlewares(app);
+        }
+
+        private static void AddSwager(IServiceCollection services)
+        {
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(s =>
             {
                 s.SwaggerDoc("v1", new OpenApiInfo { Title = "SchoolPortal API", Version = "v1" });
                 s.EnableAnnotations();
             });
+        }
 
-            // Add Logger
+        private static void AddLogger(IServiceCollection services, IConfiguration configuration)
+        {
             var logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
                     .Enrich.FromLogContext()
@@ -34,18 +44,11 @@ namespace SchoolPortal.Api.Extensions
                     .CreateLogger();
 
             services.AddSingleton<Serilog.ILogger>(logger);
+        }
 
-            // Add DB Connection Factory
-            services.AddSingleton<IDbConnectionFactory>(
-                _ => new DbConnectionFactory(configuration.GetConnectionString("DatabaseConnection")!));
-
-
-            // Add CORS configuration
-            var allowedOrigins = new[] {
-                "https://eduinfo.azurewebsites.net",
-                "https://eduinfo-dev.azurewebsites.net",
-                "http://localhost:3000"
-            };
+        private static void AddCors(IServiceCollection services, IConfiguration configuration)
+        {
+            var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
 
             services.AddCors(options =>
             {
@@ -68,15 +71,16 @@ namespace SchoolPortal.Api.Extensions
             });
         }
 
-        public static void WebApplicationExtensions(this WebApplication app)
+        private static void ConfigureSwager(WebApplication app)
         {
-            // Swagger
             app.UseSwagger();
             app.UseSwaggerUI(s => s.SwaggerEndpoint("/swagger/v1/swagger.json", "SchoolPortal API v1"))
                .UseHttpsRedirection()
                .UseStaticFiles();
+        }
 
-            // Middlewares
+        private static void ConfigureMiddlewares(WebApplication app)
+        {
             app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseMiddleware<RequestLoggingMiddleware>();
         }
