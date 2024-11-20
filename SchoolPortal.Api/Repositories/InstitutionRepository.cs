@@ -40,7 +40,7 @@ namespace SchoolPortal.Api.Repositories
 
             parameters.Add("@InstitutionId", institutionId, DbType.Int32);
             parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
-            parameters.Add("@Grade", grade ?? (object)DBNull.Value, DbType.Int32);
+            parameters.Add("@Grade", grade, DbType.Int32);
 
             return (await connection.QueryAsync<ProfileModel>(
                     sql: "[Application].[usp_GetFilteredProfiles]",

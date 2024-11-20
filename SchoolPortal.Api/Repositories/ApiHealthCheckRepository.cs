@@ -43,10 +43,6 @@ namespace SchoolPortal.Api.Services
 
             var connectionString = configuration.GetConnectionString("DatabaseConnection");
 
-            //TODO @IvayloK - Not in use at the moment. There are no tagged services with for now.
-            //var healthReport = await healthCheckService.CheckHealthAsync(c => c.Tags.Contains("Database"));
-            //var databaseStatus = healthReport.Entries.FirstOrDefault(e => e.Key == "Database").Value.Status;
-
             try
             {
                 var connection = await connectionFactory.CreateConnectionAsync();

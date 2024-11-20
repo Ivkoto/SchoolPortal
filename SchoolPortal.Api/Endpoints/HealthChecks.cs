@@ -1,4 +1,5 @@
-﻿using SchoolPortal.Api.Services;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using SchoolPortal.Api.Services;
 
 namespace SchoolPortal.Api.Endpoints
 {
@@ -12,18 +13,18 @@ namespace SchoolPortal.Api.Endpoints
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddScoped<IApiHealthCheckRepository, ApiHealthCheckRepository>();
+            services.TryAddScoped<IApiHealthCheckRepository, ApiHealthCheckRepository>();
             services.AddHealthChecks();
         }
 
-        internal async Task<IResult> Ping(IApiHealthCheckRepository service, CancellationToken cancellationToken)
+        internal async Task<IResult> Ping(IApiHealthCheckRepository repository, CancellationToken cancellationToken)
         {
-            return await service.Ping(cancellationToken);
+            return await repository.Ping(cancellationToken);
         }
 
-        internal async Task<IResult> PingDetails(IApiHealthCheckRepository service, CancellationToken cancellationToken)
+        internal async Task<IResult> PingDetails(IApiHealthCheckRepository repository, CancellationToken cancellationToken)
         {
-            return await service.PingDetails(cancellationToken);
+            return await repository.PingDetails(cancellationToken);
         }
     }
 }

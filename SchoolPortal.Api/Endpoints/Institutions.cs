@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
+using static SchoolPortal.Api.Validation.ProfileValidator;
 
 namespace SchoolPortal.Api.Endpoints
 {
@@ -27,17 +29,17 @@ namespace SchoolPortal.Api.Endpoints
 
         public void MapServices(IServiceCollection services)
         {
-            services.AddScoped<IInstitutionRepository, InstitutionRepository>();
+            services.TryAddScoped<IInstitutionRepository, InstitutionRepository>();
         }
 
         internal async Task<IResult> GetInstitutionById(
             int institutionId,
             HttpContext httpContext,
-            [FromServices] IInstitutionRepository service)
+            [FromServices] IInstitutionRepository institutionRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var currentInstitution = await service.GetInstitutionById(institutionId);
+            var currentInstitution = await institutionRepository.GetInstitutionById(institutionId);
 
             return Results.Ok(currentInstitution);
         }
@@ -46,12 +48,28 @@ namespace SchoolPortal.Api.Endpoints
             int institutionId,
             HttpContext httpContext,
             [FromQuery] int schoolYear,
-            [FromQuery] int? grade,
-            [FromServices] IInstitutionRepository service)
+            [FromQuery] int grade,
+            [FromServices] IInstitutionRepository institutionRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var profiles = await service.GetInstitutionProfiles(institutionId, schoolYear, grade);
+            var schoolYearValidator = new SchoolYearValidator();
+            var gradeValidator = new GradeValidator();
+
+            var schoolYearValidationResult = schoolYearValidator.Validate(schoolYear);
+            var gradeValidationResult = gradeValidator.Validate(grade);
+
+
+            if (!schoolYearValidationResult.IsValid || !gradeValidationResult.IsValid)
+            {
+                var errors = schoolYearValidationResult.Errors.Concat(gradeValidationResult.Errors)
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+
+                return Results.ValidationProblem(errors);
+            }
+
+            var profiles = await institutionRepository.GetInstitutionProfiles(institutionId, schoolYear, grade);
 
             return Results.Ok(
                 new GetFilteredProfilesResponse
@@ -67,11 +85,26 @@ namespace SchoolPortal.Api.Endpoints
             HttpContext httpContext,
             [FromQuery] int schoolYear,
             [FromQuery] int grade,
-            [FromServices] IInstitutionRepository service)
+            [FromServices] IInstitutionRepository institutionRepository)
         {
             httpContext.Response.Headers["Deprecated"] = "False";
 
-            var examResults = await service.GetInstitutionAverageSuccesses(institutionId, schoolYear, grade);
+            var schoolYearValidator = new SchoolYearValidator();
+            var gradeValidator = new GradeValidator();
+
+            var schoolYearValidationResult = schoolYearValidator.Validate(schoolYear);
+            var gradeValidationResult = gradeValidator.Validate(grade);
+
+            if (!schoolYearValidationResult.IsValid || !gradeValidationResult.IsValid)
+            {
+                var errors = schoolYearValidationResult.Errors.Concat(gradeValidationResult.Errors)
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+
+                return Results.ValidationProblem(errors);
+            }
+
+            var examResults = await institutionRepository.GetInstitutionAverageSuccesses(institutionId, schoolYear, grade);
 
             return Results.Ok(
                 new GetExamResultsResponse

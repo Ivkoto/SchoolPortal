@@ -38,16 +38,34 @@ namespace SchoolPortal.Api.Validation
                 .WithMessage($"Provided profile type must be either '{CustomEnums.ProfileTypes.Professional}' or '{CustomEnums.ProfileTypes.Profiled}', or it can be null.");
 
             RuleFor(x => x.SchoolYear)
-                .InclusiveBetween(2024, 2024)
-                .WithMessage("SchoolYear must be 2024.");
+                .SetValidator(new SchoolYearValidator());
 
             RuleFor(x => x.Settlement)
                 .Must(settlement => settlement != null && settlement.Equals("София", StringComparison.OrdinalIgnoreCase))
                 .WithMessage("Settlement must be София");
 
             RuleFor(x => x.Grade)
-                .Must(grade => new[] { 4, 7, 10 }.Contains(grade))
-                .WithMessage("Grade must be one of the following: 4, 7, 10");
+                .SetValidator(new GradeValidator());
+        }
+
+        public class SchoolYearValidator : AbstractValidator<int>
+        {
+            public SchoolYearValidator()
+            {
+                RuleFor(x => x)
+                    .InclusiveBetween(2010, 2024)
+                    .WithMessage("SchoolYear must be between 2010 and 2024, inclusive.");
+            }
+        }
+
+        public class GradeValidator : AbstractValidator<int>
+        {
+            public GradeValidator()
+            {
+                RuleFor(x => x)
+                    .Must(grade => new[] { 4, 7, 10 }.Contains(grade))
+                    .WithMessage("Grade must be one of the following: 4, 7, 10");
+            }
         }
 
         private bool IsValidProfileType(string? profileType)
