@@ -27,7 +27,22 @@ stages:
         - task: UseDotNet@2
           displayName: Use dot net 8
           inputs:
-            version: '8.x'        
+            version: '8.x'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build'
+          inputs:
+            command: 'build'
+            projects: '**/*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Run Unit Tests'
+          inputs:
+            command: 'test'
+            projects: '**/SchoolPortal.UnitTests/*.csproj'
+            arguments: '--configuration $(BuildConfiguration) --no-build --collect "Code coverage"'
+            testRunTitle: 'School Portal Api Unit tests'
 
         - task: DotNetCoreCLI@2
           displayName: 'Publish SchoolPortal.Api'
