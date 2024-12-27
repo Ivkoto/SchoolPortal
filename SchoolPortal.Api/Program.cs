@@ -1,16 +1,21 @@
 ﻿using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SchoolPortal.Api.Endpoints;
 using SchoolPortal.Api.Extensions;
+using SchoolPortal.Api.Infrastructure.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
+var environmentName = builder.Environment.EnvironmentName;
 
 builder.Services.ServiceCollectionExtensions(configuration);
 builder.Services.AddEndpoints(typeof(IEndpoint));
-builder.Services.AddHealthChecks()
-    .AddSqlServer(configuration.GetConnectionString("DatabaseConnection")!);
+builder.Services.AddHealthCheck();
+builder.Services.AddOpenTelemetry(configuration, environmentName);
+builder.Services.TryAddSingleton<IHealthCheckPublisher, TelemetryHealthCheckPublisher>();
 
 var app = builder.Build();
 
@@ -20,7 +25,14 @@ app.UseCors("AllowedOriginsPolicy");
 
 app.MapHealthChecks("/api/v1/health", new HealthCheckOptions
 {
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+    AllowCachingResponses = false,
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [HealthStatus.Degraded] = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    }
 });
 
 app.MapGet("/", async context =>

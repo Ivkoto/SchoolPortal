@@ -3,66 +3,65 @@ using Dapper;
 using SchoolPortal.Api.Extensions;
 using SchoolPortal.Api.Models;
 
-namespace SchoolPortal.Api.Repositories
+namespace SchoolPortal.Api.Repositories;
+
+public interface IInstitutionRepository
 {
-    public interface IInstitutionRepository
+    Task<InstitutionModel> GetInstitutionById(int institutionId);
+    Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
+    Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade);
+}
+
+public class InstitutionRepository : IInstitutionRepository
+{
+    private readonly IDbConnectionFactory connectionFactory;
+
+    public InstitutionRepository(IDbConnectionFactory connectionFactory)
     {
-        Task<InstitutionModel> GetInstitutionById(int institutionId);
-        Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
-        Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade);
+        this.connectionFactory = connectionFactory;
     }
 
-    public class InstitutionRepository : IInstitutionRepository
+    public async Task<InstitutionModel> GetInstitutionById(int institutionId)
     {
-        private readonly IDbConnectionFactory connectionFactory;
+        var connection = await connectionFactory.CreateConnectionAsync();
 
-        public InstitutionRepository(IDbConnectionFactory connectionFactory)
-        {
-            this.connectionFactory = connectionFactory;
-        }
+        var institution = await connection.QuerySingleOrDefaultAsync<InstitutionModel>(
+                          sql: "[Application].[usp_GetInstitutionById]",
+                          param: new { institutionId },
+                          commandType: CommandType.StoredProcedure);
 
-        public async Task<InstitutionModel> GetInstitutionById(int institutionId)
-        {
-            var connection = await connectionFactory.CreateConnectionAsync();
+        return institution ?? throw new KeyNotFoundException($"No Institution found with the ID {institutionId}");
+    }
 
-            var institution = await connection.QuerySingleOrDefaultAsync<InstitutionModel>(
-                              sql: "[Application].[usp_GetInstitutionById]",
-                              param: new { institutionId },
-                              commandType: CommandType.StoredProcedure);
+    public async Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+        var parameters = new DynamicParameters();
 
-            return institution ?? throw new KeyNotFoundException($"No Institution found with the ID {institutionId}");
-        }
+        parameters.Add("@InstitutionId", institutionId, DbType.Int32);
+        parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
+        parameters.Add("@Grade", grade, DbType.Int32);
 
-        public async Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade)
-        {
-            var connection = await connectionFactory.CreateConnectionAsync();
-            var parameters = new DynamicParameters();
+        return (await connection.QueryAsync<ProfileModel>(
+                sql: "[Application].[usp_GetFilteredProfiles]",
+                param: parameters,
+                commandType: CommandType.StoredProcedure
+        )).ToList();
+    }
 
-            parameters.Add("@InstitutionId", institutionId, DbType.Int32);
-            parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
-            parameters.Add("@Grade", grade, DbType.Int32);
+    public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade)
+    {
+        var connection = await connectionFactory.CreateConnectionAsync();
+        var parameters = new DynamicParameters();
 
-            return (await connection.QueryAsync<ProfileModel>(
-                    sql: "[Application].[usp_GetFilteredProfiles]",
-                    param: parameters,
-                    commandType: CommandType.StoredProcedure
-            )).ToList();
-        }
+        parameters.Add("@InstitutionId", institutionId, DbType.Int32);
+        parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
+        parameters.Add("@Grade", grade, DbType.Int32);
 
-        public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade)
-        {
-            var connection = await connectionFactory.CreateConnectionAsync();
-            var parameters = new DynamicParameters();
-
-            parameters.Add("@InstitutionId", institutionId, DbType.Int32);
-            parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
-            parameters.Add("@Grade", grade, DbType.Int32);
-
-            return (await connection.QueryAsync<ExamResultModel>(
-                    sql: "[Application].[usp_GetExamResults]",
-                    param: parameters,
-                    commandType: CommandType.StoredProcedure
-            )).ToList();
-        }
+        return (await connection.QueryAsync<ExamResultModel>(
+                sql: "[Application].[usp_GetExamResults]",
+                param: parameters,
+                commandType: CommandType.StoredProcedure
+        )).ToList();
     }
 }

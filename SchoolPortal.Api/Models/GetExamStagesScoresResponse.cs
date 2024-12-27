@@ -1,28 +1,27 @@
-﻿namespace SchoolPortal.Api.Models
-{
-    public record GetExamStagesScoresResponse
-    {
-        public int StagesCount { get; set; } = 0;
-        public List<ExamStageScoresModel> ExamStageScores { get; set; } = [];
-    }
+﻿namespace SchoolPortal.Api.Models;
 
-    public record ExamStageScoresModel
-    (
-        int StageId,
-        int StageNumber,
-        int FreePositionsTotal,
-        int FreePositionsMen,
-        int FreePositionsWomen,
-        bool IsAggregatedScore,
-        int ProfileId,
-        string ProfileName,
-        int SchoolYear,
-        bool IsClosed,
-        decimal MinTotalScore,
-        decimal MinMaleScore,
-        decimal MinFemaleScore,
-        decimal MaxTotalScore,
-        decimal MaxMaleScore,
-        decimal MaxFemaleScore
-    );
+public record GetExamStagesScoresResponse
+{
+    public int StagesCount { get; set; } = 0;
+    public List<ExamStageScoresModel> ExamStageScores { get; set; } = [];
 }
+
+public record ExamStageScoresModel
+(
+    int StageId,
+    int StageNumber,
+    int FreePositionsTotal,
+    int FreePositionsMen,
+    int FreePositionsWomen,
+    bool IsAggregatedScore,
+    int ProfileId,
+    string ProfileName,
+    int SchoolYear,
+    bool IsClosed,
+    decimal MinTotalScore,
+    decimal MinMaleScore,
+    decimal MinFemaleScore,
+    decimal MaxTotalScore,
+    decimal MaxMaleScore,
+    decimal MaxFemaleScore
+);

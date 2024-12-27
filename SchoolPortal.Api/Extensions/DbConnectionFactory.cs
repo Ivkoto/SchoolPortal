@@ -1,28 +1,26 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 using Microsoft.Data.SqlClient;
 
-namespace SchoolPortal.Api.Extensions
+namespace SchoolPortal.Api.Extensions;
+
+public interface IDbConnectionFactory
 {
-    public interface IDbConnectionFactory
+    Task<DbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default);
+}
+
+public class DbConnectionFactory : IDbConnectionFactory
+{
+    private readonly string connectionString;
+
+    public DbConnectionFactory(string connectionString)
     {
-        Task<IDbConnection> CreateConnectionAsync (CancellationToken cancellationToken = default);
+        this.connectionString = connectionString;
     }
 
-    public class DbConnectionFactory : IDbConnectionFactory
+    public async Task<DbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default)
     {
-        private readonly string connectionString;
-
-        public DbConnectionFactory(string connectionString)
-        {
-            this.connectionString = connectionString;
-        }
-
-        public async Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default)
-        {
-            var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync(cancellationToken);
-
-            return connection;
-        }
+        var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync(cancellationToken);
+        return connection;
     }
 }

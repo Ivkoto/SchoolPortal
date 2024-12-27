@@ -106,6 +106,7 @@ stages:
             packageForLinux: $(Pipeline.Workspace)/build/build.zip
             deployToSlotOrASE: true
             slotName: dev
+            AppSettings: '-ASPNETCORE_ENVIRONMENT Development'
 
   - stage: DeployToProd
     dependsOn: Build
@@ -142,4 +143,4 @@ stages:
             appType: webAppLinux
             webAppName: eduapi
             packageForLinux: $(Pipeline.Workspace)/build/build.zip
-            # AppSettings: -Serilog__MinimumLevel__Default "Error"
+            AppSettings: '-ASPNETCORE_ENVIRONMENT Production'

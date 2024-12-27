@@ -1,11 +1,10 @@
-﻿namespace SchoolPortal.Api.Models
+﻿namespace SchoolPortal.Api.Models;
+
+public static class CustomEnums
 {
-    public static class CustomEnums
+    public static class ProfileTypes
     {
-        public static class ProfileTypes
-        {
-            public static string Professional = "професионална";
-            public static string Profiled = "профилирана";
-        }
+        public static string Professional = "професионална";
+        public static string Profiled = "профилирана";
     }
 }
