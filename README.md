@@ -7,7 +7,7 @@ SchoolPortal API provides access to various functionalities of the SchoolPortal 
 
 ## License
 
-**This project is licensed under the Devocean Solutions License - see the [LICENSE](LICENSE.md) file for details.**
+**This project is licensed under the Devocean Solutions License - see the [LICENSE.md](LICENSE.md) file for details.**
 
 ## Quick Start
 
@@ -16,7 +16,6 @@ SchoolPortal API provides access to various functionalities of the SchoolPortal 
 1. Clone the repository.
 2. Install dependencies.
 3. Run the application.
-
 
 ### Example Usage
 
@@ -28,7 +27,7 @@ curl -X POST https://eduapi.azurewebsites.net/profiles/lookup \
   -H "Content-Type: application/json" \
   -d '{
       "schoolYear": 2024,
-      "grade": 8,
+      "grade": 7,
       "settlement": "София",
       "neighbourhood": null,
       "geoLocationFilter": {
@@ -40,9 +39,7 @@ curl -X POST https://eduapi.azurewebsites.net/profiles/lookup \
       "specialtyId": null,
       "professionId": null,
       "professionalDirectionId": null,
-      "scienceId": null,
-      "pageNumber": null,
-      "pageSize": null
+      "scienceId": null
   }'
   ```
 

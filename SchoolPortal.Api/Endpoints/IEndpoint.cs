@@ -1,9 +1,8 @@
-﻿namespace SchoolPortal.Api.Endpoints
-{
-    public interface IEndpoint
-    {
-        void MapServices(IServiceCollection services);
+﻿namespace SchoolPortal.Api.Endpoints;
 
-        void MapEndpoints(WebApplication app);
-    }
+public interface IEndpoint
+{
+    void MapServices(IServiceCollection services);
+
+    void MapEndpoints(WebApplication app);
 }

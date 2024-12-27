@@ -1,25 +1,24 @@
-﻿namespace SchoolPortal.Api.Models
-{
-    public record GetFilteredProfilesRequest
-    (
-        int SchoolYear,
-        int Grade,
-        string? Settlement,
-        string? Neighbourhood,
-        GeoLocationModel? GeoLocationFilter,
-        string? ProfileType,
-        int? SpecialtyId,
-        int? ProfessionId,
-        int? ProfessionalDirectionId,
-        int? ScienceId,
-        int? PageNumber,
-        int? PageSize
-    );
+﻿namespace SchoolPortal.Api.Models;
 
-    public record GeoLocationModel
-    (
-        decimal? Latitude,
-        decimal? Longitude,
-        decimal? Radius
-    );
-}
+public record GetFilteredProfilesRequest
+(
+    int SchoolYear,
+    int Grade,
+    string? Settlement,
+    string? Neighbourhood,
+    GeoLocationModel? GeoLocationFilter,
+    string? ProfileType,
+    int? SpecialtyId,
+    int? ProfessionId,
+    int? ProfessionalDirectionId,
+    int? ScienceId,
+    int? PageNumber,
+    int? PageSize
+);
+
+public record GeoLocationModel
+(
+    decimal? Latitude,
+    decimal? Longitude,
+    decimal? Radius
+);

@@ -5,82 +5,77 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.Reflection;
 
-namespace SchoolPortal.Database.Deploy
+namespace SchoolPortal.Database.Deploy;
+
+public class Program
 {
-    public class Program
+    public static int Main()
     {
-        public static int Main()
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(LoadConfiguration())
+            .CreateLogger();
+
+        var configuration = LoadConfiguration();
+
+        try
         {
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(LoadConfiguration())
-                .MinimumLevel.Information()
-                .WriteTo.Console()
-                .CreateLogger();
+            var connectionString = configuration.GetConnectionString("DatabaseConnection");
+            var environment = configuration["Environment"];
+            var result = DeployDatabase(connectionString!, environment!);
 
-            var configuration = LoadConfiguration();
+            Log.Information("Deployment {Result}", result ? "Successful" : "Failed");
 
-            try
-            {
-                var connectionString = configuration.GetConnectionString("DatabaseConnection");
-                var environment = configuration["Environment"];
-                var result = DeployDatabase(connectionString, environment);
+            return result ? 0 : 1;
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "An unhandled exception occurred during deployment.");
 
-                Log.Information("Deployment {Result}", result ? "Successful" : "Failed");
+            return 1;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
 
-                return result ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "An unhandled exception occurred during deployment.");
+    private static IConfigurationRoot LoadConfiguration()
+        => new ConfigurationBuilder()
+            .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
 
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+    private static bool DeployDatabase(string connectionString, string environment)
+    {
+        if (environment == "LocalRun")
+        {
+            ResetDatabase(connectionString);
         }
 
-        private static IConfigurationRoot LoadConfiguration()
-            => new ConfigurationBuilder()
-                .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
+        var assembly = Assembly.GetExecutingAssembly();
 
-        private static bool DeployDatabase(string connectionString, string environment)
-        {
-            if (environment == "LocalRun")
-            {
-                ResetDatabase(connectionString);
-            }
+        var upgrader = DeployChanges.To
+            .SqlDatabase(connectionString)
+            .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".Scripts."),
+                new SqlScriptOptions { RunGroupOrder = 1, ScriptType = ScriptType.RunOnce })
+            .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Functions."),
+                new SqlScriptOptions { RunGroupOrder = 2, ScriptType = ScriptType.RunAlways })
+            .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Views."),
+                new SqlScriptOptions { RunGroupOrder = 3, ScriptType = ScriptType.RunAlways })
+            .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.StoredProcedures."),
+                new SqlScriptOptions { RunGroupOrder = 4, ScriptType = ScriptType.RunAlways })
+            .LogToAutodetectedLog()
+            .Build();
 
-            var assembly = Assembly.GetExecutingAssembly();
+        var result = upgrader.PerformUpgrade();
 
-            var upgrader = DeployChanges.To
-                .SqlDatabase(connectionString)
-                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".Scripts."),
-                    new SqlScriptOptions { RunGroupOrder = 1, ScriptType = ScriptType.RunOnce })
-                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Functions."),
-                    new SqlScriptOptions { RunGroupOrder = 2, ScriptType = ScriptType.RunAlways })
-                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.Views."),
-                    new SqlScriptOptions { RunGroupOrder = 3, ScriptType = ScriptType.RunAlways })
-                .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.StoredProcedures."),
-                    new SqlScriptOptions { RunGroupOrder = 4, ScriptType = ScriptType.RunAlways })
-                .LogToConsole()
-                .Build();
+        return result.Successful;
+    }
 
-            var result = upgrader.PerformUpgrade();
-
-            Console.ForegroundColor = result.Successful ? ConsoleColor.Green : ConsoleColor.Red;
-            Console.WriteLine(result.Successful ? "Deployment Successful" : "Deployment Failed");
-            Console.ResetColor();
-
-            return result.Successful;
-        }
-
-        private static void ResetDatabase(string connectionString)
-        {
-            DropDatabase.For.SqlDatabase(connectionString);
-            EnsureDatabase.For.SqlDatabase(connectionString);
-        }
+    private static void ResetDatabase(string connectionString)
+    {
+        Log.Information("Resetting the database...");
+        DropDatabase.For.SqlDatabase(connectionString);
+        EnsureDatabase.For.SqlDatabase(connectionString);
+        Log.Information("Database reset completed.");
     }
 }
