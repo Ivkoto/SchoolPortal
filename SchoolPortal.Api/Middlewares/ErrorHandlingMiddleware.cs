@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using Newtonsoft.Json;
+using SchoolPortal.Api.Models;
+using System.Text.Json;
 
 namespace SchoolPortal.Api.Middlewares;
 
@@ -50,17 +51,8 @@ public class ErrorHandlingMiddleware
             : GetExceptionMessages(exception)
         };
 
-        var result = JsonConvert.SerializeObject(errorResponse);
+        var result = JsonSerializer.Serialize(errorResponse);
         return context.Response.WriteAsync(result);
-    }
-
-    private class ErrorResponse
-    {
-        public int ErrorCode { get; set; }
-        public string? Message { get; set; }
-        public string? InnerException { get; set; }
-        public List<string>? Errors { get; set; }
-
     }
 
     private static List<string> GetExceptionMessages(Exception ex)

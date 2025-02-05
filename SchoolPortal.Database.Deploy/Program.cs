@@ -2,6 +2,7 @@
 using DbUp.Engine;
 using DbUp.Support;
 using Microsoft.Extensions.Configuration;
+using SchoolPortal.Database.Deploy.Infrastructure;
 using Serilog;
 using System.Reflection;
 
@@ -63,7 +64,7 @@ public class Program
                 new SqlScriptOptions { RunGroupOrder = 3, ScriptType = ScriptType.RunAlways })
             .WithScriptsAndCodeEmbeddedInAssembly(assembly, script => script.Contains(".AlwaysRun.StoredProcedures."),
                 new SqlScriptOptions { RunGroupOrder = 4, ScriptType = ScriptType.RunAlways })
-            .LogToAutodetectedLog()
+            .LogTo(new SerilogUpgradeLoger(Log.Logger))
             .Build();
 
         var result = upgrader.PerformUpgrade();

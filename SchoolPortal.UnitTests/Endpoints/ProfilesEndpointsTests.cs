@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -7,6 +6,7 @@ using Moq;
 using SchoolPortal.Api.Endpoints;
 using SchoolPortal.Api.Models;
 using SchoolPortal.Api.Repositories;
+using SchoolPortal.UnitTests.Validation;
 
 namespace SchoolPortal.UnitTests.Endpoints;
 
@@ -78,18 +78,18 @@ public class ProfilesEndpointsTests
             locationValidatorMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetFilteredProfilesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetFilteredProfilesResponse>>(result);
+        var okResult = result as Ok<GetFilteredProfilesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetFilteredProfilesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.Profiles.Should().BeEquivalentTo(profilesResponse);
-        response.ProfilesCount.Should().Be(1);
-        response.PageNumber.Should().Be(1);
-        response.PageSize.Should().Be(1);
-        response.TotalPages.Should().Be(1);
+        Assert.NotNull(response);
+        Assert.Equal(profilesResponse, response!.Profiles);
+        Assert.Equal(1, response.ProfilesCount);
+        Assert.Equal(1, response.PageNumber);
+        Assert.Equal(1, response.PageSize);
+        Assert.Equal(1, response.TotalPages);
     }    
 
     [Fact]
@@ -114,18 +114,18 @@ public class ProfilesEndpointsTests
             locationValidatorMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetFilteredProfilesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetFilteredProfilesResponse>>(result);
+        var okResult = result as Ok<GetFilteredProfilesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetFilteredProfilesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.Profiles.Should().BeEmpty();
-        response.ProfilesCount.Should().Be(0);
-        response.PageNumber.Should().Be(1);
-        response.PageSize.Should().Be(0);
-        response.TotalPages.Should().Be(1);
+        Assert.NotNull(response);
+        Assert.Empty(response!.Profiles);
+        Assert.Equal(0, response.ProfilesCount);
+        Assert.Equal(1, response.PageNumber);
+        Assert.Equal(0, response.PageSize);
+        Assert.Equal(1, response.TotalPages);
     }
 
 
@@ -147,15 +147,15 @@ public class ProfilesEndpointsTests
             profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<ProfileModel>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<ProfileModel>>(result);
+        var okResult = result as Ok<ProfileModel>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var responseProfile = (result as Ok<ProfileModel>)?.Value;
+        var responseProfile = okResult?.Value;
 
-        responseProfile.Should().NotBeNull();
-        responseProfile!.ProfileId.Should().Be(profileId);
-        responseProfile.ProfileName.Should().Be("Test Profile");
+        Assert.NotNull(responseProfile);
+        Assert.Equal(profileId, responseProfile!.ProfileId);
+        Assert.Equal("Test Profile", responseProfile.ProfileName);
     }
 
     [Fact]
@@ -176,15 +176,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetSciencesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetSciencesResponse>>(result);
+        var okResult = result as Ok<GetSciencesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetSciencesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.SciencesCount.Should().Be(sciences.Count);
-        response.Sciences.Should().BeEquivalentTo(sciences);
+        Assert.NotNull(response);
+        Assert.Equal(sciences.Count, response!.SciencesCount);
+        Assert.Equal(sciences, response.Sciences);
     }
 
     [Fact]
@@ -201,15 +201,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetSciencesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetSciencesResponse>>(result);
+        var okResult = result as Ok<GetSciencesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetSciencesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.SciencesCount.Should().Be(0);
-        response.Sciences.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response!.SciencesCount);
+        Assert.Empty(response.Sciences);
     }
 
     [Fact]
@@ -231,15 +231,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetProfessionalDirections(scienceId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetProfessionalDirectionsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetProfessionalDirectionsResponse>>(result);
+        var okResult = result as Ok<GetProfessionalDirectionsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetProfessionalDirectionsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ProfessionalDirectionsCount.Should().Be(response.ProfessionalDirectionsCount);
-        response.ProfessionalDirections.Should().BeEquivalentTo(professionalDirections);
+        Assert.NotNull(response);
+        Assert.Equal(professionalDirections.Count, response!.ProfessionalDirectionsCount);
+        Assert.Equal(professionalDirections, response.ProfessionalDirections);
     }
 
     [Fact]
@@ -257,16 +257,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetProfessionalDirections(scienceId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetProfessionalDirectionsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetProfessionalDirectionsResponse>>(result);
+        var okResult = result as Ok<GetProfessionalDirectionsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
+        var response = okResult?.Value;
 
-        var response = (result as Ok<GetProfessionalDirectionsResponse>)?.Value;
-
-        response.Should().NotBeNull();
-        response!.ProfessionalDirectionsCount.Should().Be(0);
-        response.ProfessionalDirections.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response!.ProfessionalDirectionsCount);
+        Assert.Empty(response.ProfessionalDirections);
     }
 
     [Fact]
@@ -288,15 +287,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetProfessions(professionalDirectionId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetProfessionsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetProfessionsResponse>>(result);
+        var okResult = result as Ok<GetProfessionsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetProfessionsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ProfessionsCount.Should().Be(expectedProfessions.Count);
-        response.Professions.Should().BeEquivalentTo(expectedProfessions);
+        Assert.NotNull(response);
+        Assert.Equal(expectedProfessions.Count, response!.ProfessionsCount);
+        Assert.Equal(expectedProfessions, response.Professions);
     }
 
     [Fact]
@@ -314,15 +313,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetProfessions(professionalDirectionId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result.Should()
-            .BeOfType<Ok<GetProfessionsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetProfessionsResponse>>(result);
+        var okResult = result as Ok<GetProfessionsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetProfessionsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ProfessionsCount.Should().Be(0);
-        response.Professions.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response!.ProfessionsCount);
+        Assert.Empty(response.Professions);
     }
 
     [Fact]
@@ -344,16 +343,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetSpecialties(professionId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result.Should()
-            .BeOfType<Ok<GetSpecialtiesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetSpecialtiesResponse>>(result);
+        var okResult = result as Ok<GetSpecialtiesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
+        var response = okResult?.Value;
 
-        var response = (result as Ok<GetSpecialtiesResponse>)?.Value;
-
-        response.Should().NotBeNull();
-        response!.SpecialtesCount.Should().Be(expectedSpecialties.Count);
-        response.Specialties.Should().BeEquivalentTo(expectedSpecialties);
+        Assert.NotNull(response);
+        Assert.Equal(expectedSpecialties.Count, response!.SpecialtesCount);
+        Assert.Equal(expectedSpecialties, response.Specialties);
     }
 
     [Fact]
@@ -371,15 +369,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetSpecialties(professionId, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetSpecialtiesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetSpecialtiesResponse>>(result);
+        var okResult = result as Ok<GetSpecialtiesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetSpecialtiesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.SpecialtesCount.Should().Be(0);
-        response.Specialties.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response!.SpecialtesCount);
+        Assert.Empty(response.Specialties);
     }
 
     [Fact]
@@ -402,15 +400,15 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetExamStagesScores(profileId, schoolYear, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetExamStagesScoresResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetExamStagesScoresResponse>>(result);
+        var okResult = result as Ok<GetExamStagesScoresResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetExamStagesScoresResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.StagesCount.Should().Be(expectedScores.Count);
-        response.ExamStageScores.Should().BeEquivalentTo(expectedScores);
+        Assert.NotNull(response);
+        Assert.Equal(expectedScores.Count, response!.StagesCount);
+        Assert.Equal(expectedScores, response.ExamStageScores);
     }
 
     [Fact]
@@ -429,14 +427,14 @@ public class ProfilesEndpointsTests
         var result = await profilesEndpoint.GetExamStagesScores(profileId, schoolYear, httpContextMock.Object, profileRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetExamStagesScoresResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetExamStagesScoresResponse>>(result);
+        var okResult = result as Ok<GetExamStagesScoresResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetExamStagesScoresResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.StagesCount.Should().Be(0);
-        response.ExamStageScores.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response!.StagesCount);
+        Assert.Empty(response.ExamStageScores);
     }
 }

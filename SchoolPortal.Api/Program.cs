@@ -7,9 +7,9 @@ using SchoolPortal.Api.Extensions;
 using SchoolPortal.Api.Infrastructure.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
+var environmentName = builder.Environment.EnvironmentName ?? "Production";
 
 var configuration = builder.Configuration;
-var environmentName = builder.Environment.EnvironmentName;
 
 builder.Services.ServiceCollectionExtensions(configuration);
 builder.Services.AddEndpoints(typeof(IEndpoint));
@@ -44,3 +44,5 @@ app.MapGet("/", async context =>
 });
 
 app.Run();
+
+public partial class Program { }

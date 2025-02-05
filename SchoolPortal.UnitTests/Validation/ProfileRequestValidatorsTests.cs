@@ -22,107 +22,162 @@ public class ProfileRequestValidatorsTests
     [Fact]
     public void ProfileValidator_ShouldHaveError_When_ProfileTypeIsInvalid()
     {
+        // Arrange
         var model = new GetFilteredProfilesRequest
-            (SchoolYear: 2024, Grade: 7, null, null, null, ProfileType: "InvalidType", null, null, null, null, null, null);
+            (SchoolYear: 2024, Grade: 7, Settlement: "София", null, null, ProfileType: "InvalidType", null, null, null, null, null, null);
 
+        // Act
         var result = profileValidator.TestValidate(model);
 
-        result.ShouldHaveValidationErrorFor(x => x.ProfileType)
-              .WithErrorMessage($"Provided profile type must be either '{CustomEnums.ProfileTypes.Professional}' or '{CustomEnums.ProfileTypes.Profiled}', or it can be null.");
+        // Assert
+        Assert.False(result.IsValid);
+        var erorr = Assert.Single(result.Errors);
+        Assert.Equal("ProfileType", erorr.PropertyName);
+        Assert.Equal("Must be either 'професионална' or 'профилирана', or it can be null.", erorr.ErrorMessage);
     }
 
     [Fact]
     public void ProfileValidator_ShouldNotHaveError_When_ProfileTypeIsValid()
     {
+        // Arrange
         var model = new GetFilteredProfilesRequest
-            (SchoolYear: 2024, Grade: 7, null, null, null, ProfileType: CustomEnums.ProfileTypes.Professional, null, null, null, null, null, null);
+            (SchoolYear: 2024, Grade: 7, Settlement:"София", null, null, ProfileType: CustomEnums.ProfileTypes.Professional, null, null, null, null, null, null);
 
+        // Act
         var result = profileValidator.TestValidate(model);
 
-        result.ShouldNotHaveValidationErrorFor(x => x.ProfileType);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ProfileValidator_ShouldNotHaveError_When_SettlementIsValid()
     {
+        //Arrange
         var model = new GetFilteredProfilesRequest
             (SchoolYear: 2024, Grade: 7, Settlement: "София", null, null, CustomEnums.ProfileTypes.Profiled, null, null, null, null, null, null);
 
         var result = profileValidator.TestValidate(model);
 
-        result.ShouldNotHaveValidationErrorFor(x => x.Settlement);
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void ProfileValidator_ShouldHaveError_When_SettlementIsInvalid()
     {
+        //Arrange
         var model = new GetFilteredProfilesRequest
             (SchoolYear: 2024, Grade: 7, Settlement: "InvalidSettlement", null, null, CustomEnums.ProfileTypes.Profiled, null, null, null, null, null, null);
 
         var result = profileValidator.TestValidate(model);
 
-        result.ShouldHaveValidationErrorFor(x => x.Settlement)
-              .WithErrorMessage("Settlement must be София");
+        //Assert
+        Assert.False(result.IsValid);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal("Settlement", error.PropertyName);
+        Assert.Equal("Must be София", error.ErrorMessage);
     }
 
     [Fact]
     public void SchoolYearValidator_ShouldHaveErrorWhen_SchoolYearIsOutOfRange()
     {
-        var result = schoolYearValidator.TestValidate(2009);
-        result.ShouldHaveValidationErrorFor(x => x)
-            .WithErrorMessage("SchoolYear must be between 2010 and 2024, inclusive.");
+        // Arrange
+        int invalidSchoolYear = 2009;
+
+        // Act
+        var result = schoolYearValidator.TestValidate(invalidSchoolYear);
+
+        // Assert
+        Assert.False(result.IsValid);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal("Must be between 2010 and 2024, inclusive.", error.ErrorMessage);
     }
 
     [Fact]
     public void SchoolYearValidator_ShouldNotHaveError_WhenSchoolYearIsInRange()
     {
-        var result = schoolYearValidator.TestValidate(2024);
+        // Arrange
+        int validSchoolYear = 2024;
 
-        result.ShouldNotHaveValidationErrorFor(x => x);
+        //Act
+        var result = schoolYearValidator.TestValidate(validSchoolYear);
+
+        //Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void GradeValidator_ShouldHaveError_WhenGradeIsInvalid()
     {
-        var result = gradeValidator.TestValidate(5);
+        // Arrange
+        int invalidGrade = 5;
 
-        result.ShouldHaveValidationErrorFor(x => x)
-            .WithErrorMessage("Grade must be one of the following: 4, 7, 10, 12");
+        // Act
+        var result = gradeValidator.TestValidate(invalidGrade);
+
+        // Assert
+        Assert.False(result.IsValid);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal("Must be one of the following: 4, 7, 10, 12", error.ErrorMessage);
     }
 
     [Fact]
     public void GradeValidator_ShouldNotHaveError_WhenGradeIsValid()
     {
-        var result = gradeValidator.TestValidate(7);
+        // Arrange
+        int validGrade = 7;
 
-        result.ShouldNotHaveValidationErrorFor(x => x);
+        // Act
+        var result = gradeValidator.TestValidate(validGrade);
+
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
     public void GeoLocationValidator_ShouldHaveError_WhenGeoLocationIsInvalid()
     {
+        // Arrange
         var model = new GeoLocationModel(100, 200, -1);
 
+        // Act
         var result = geoLocationValidator.TestValidate(model);
 
-        result.ShouldHaveValidationErrorFor(x => x.Latitude)
-            .WithErrorMessage("Latitude must be between -90 and 90 degrees.");
-        result.ShouldHaveValidationErrorFor(x => x.Longitude)
-            .WithErrorMessage("Longitude must be between -180 and 180 degrees.");
-        result.ShouldHaveValidationErrorFor(x => x.Radius)
-            .WithErrorMessage("Radius value cannot be a negative number.");
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Equal(3, result.Errors.Count);
+
+        var latitudeError = result.Errors.FirstOrDefault(e => e.PropertyName == "Latitude");
+        var longitudeError = result.Errors.FirstOrDefault(e => e.PropertyName == "Longitude");
+        var radiusError = result.Errors.FirstOrDefault(e => e.PropertyName == "Radius");
+
+        Assert.NotNull(latitudeError);
+        Assert.Equal("Latitude must be between -90 and 90 degrees.", latitudeError.ErrorMessage);
+
+        Assert.NotNull(longitudeError);
+        Assert.Equal("Longitude must be between -180 and 180 degrees.", longitudeError.ErrorMessage);
+
+        Assert.NotNull(radiusError);
+        Assert.Equal("Radius value cannot be a negative number.", radiusError.ErrorMessage);
     }
 
     [Fact]
     public void GeoLocationValidator_ShouldNotHaveError_WhenGeoLocationIsValid()
     {
+        // Arrange
         var model = new GeoLocationModel(42.0m, 23.0m, 10);
 
         var result = geoLocationValidator.TestValidate(model);
 
-        result.ShouldNotHaveValidationErrorFor(x => x.Latitude);
-        result.ShouldNotHaveValidationErrorFor(x => x.Longitude);
-        result.ShouldNotHaveValidationErrorFor(x => x.Radius);
+        // Assert
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 }
 

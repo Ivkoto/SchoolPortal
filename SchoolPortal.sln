@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchoolPortal.Database.Deplo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchoolPortal.UnitTests", "SchoolPortal.UnitTests\SchoolPortal.UnitTests.csproj", "{712A77B9-D4D1-4E16-A481-15BDE14F509D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchoolPortal.IntegrationTests", "SchoolPortal.IntegrationTests\SchoolPortal.IntegrationTests.csproj", "{2783BDC8-3C26-4D28-BDA4-7BDCE61041D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{712A77B9-D4D1-4E16-A481-15BDE14F509D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{712A77B9-D4D1-4E16-A481-15BDE14F509D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{712A77B9-D4D1-4E16-A481-15BDE14F509D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2783BDC8-3C26-4D28-BDA4-7BDCE61041D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2783BDC8-3C26-4D28-BDA4-7BDCE61041D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2783BDC8-3C26-4D28-BDA4-7BDCE61041D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2783BDC8-3C26-4D28-BDA4-7BDCE61041D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
