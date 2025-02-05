@@ -25,9 +25,9 @@ stages:
         steps:
 
         - task: UseDotNet@2
-          displayName: Use dot net 8
+          displayName: Use dot net 9
           inputs:
-            version: '8.x'
+            version: '9.x'
 
         - task: DotNetCoreCLI@2
           displayName: 'Build'
@@ -36,6 +36,21 @@ stages:
             projects: '**/*.csproj'
             arguments: '--configuration $(BuildConfiguration)'
 
+        - script: |
+            echo "Starting SQL Server container..."
+            docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=yourStrong(!)Password' -p 1433:1433 --name sqlcontainer -d mcr.microsoft.com/mssql/server:2019-latest
+          displayName: 'Start SQL Server container'
+
+        - script: |
+            echo "Waiting for SQL Server to start..."
+            sleep 15
+          displayName: 'Wait for SQL Server to start'
+
+        - script: |
+            echo "Setting database connection string..."
+            echo "##vso[task.setvariable variable=DatabaseConnectionString]Server=localhost;Database=SchoolPortalTest;User=sa;Password=yourStrong(!)Password;Integrated Security=false;Encrypt=false;TrustServerCertificate=true;Connection Timeout=30;"
+          displayName: 'Set database connection string'
+
         - task: DotNetCoreCLI@2
           displayName: 'Run Unit Tests'
           inputs:
@@ -43,6 +58,22 @@ stages:
             projects: '**/SchoolPortal.UnitTests/*.csproj'
             arguments: '--configuration $(BuildConfiguration) --no-build --collect "Code coverage"'
             testRunTitle: 'School Portal Api Unit tests'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Run Integration Tests'
+          inputs:
+            command: 'test'
+            projects: '**/SchoolPortal.IntegrationTests/*.csproj'
+            arguments: '--configuration $(BuildConfiguration) --no-build --collect "Code coverage"'
+            testRunTitle: 'School Portal API Integration Tests'
+          env:
+            DatabaseConnection: $(DatabaseConnectionString)
+
+        - script: |
+            echo "Stopping and removing SQL Server container..."
+            docker stop sqlcontainer
+            docker rm sqlcontainer
+          displayName: 'Stop and remove SQL Server container'
 
         - task: DotNetCoreCLI@2
           displayName: 'Publish SchoolPortal.Api'

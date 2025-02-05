@@ -25,9 +25,9 @@ stages:
         steps:
 
         - task: UseDotNet@2
-          displayName: Use dot net 8
+          displayName: Use dot net 9
           inputs:
-            version: '8.x'        
+            version: '9.x'        
 
         - task: DotNetCoreCLI@2
           displayName: 'Publish SchoolPortal.Database.Deploy'

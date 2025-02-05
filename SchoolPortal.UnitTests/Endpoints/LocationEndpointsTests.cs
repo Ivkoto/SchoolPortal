@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Moq;
@@ -43,15 +42,15 @@ public class LocationEndpointsTests
             locationRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetNeighbourhoodsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetNeighbourhoodsResponse>>(result);
+        var okResult = result as Ok<GetNeighbourhoodsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetNeighbourhoodsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.NeighbourhoodsCount.Should().Be(neighbourhoods.Count);
-        response.Neighbourhoods.Should().BeEquivalentTo(neighbourhoods);
+        Assert.NotNull(response);
+        Assert.Equal(neighbourhoods.Count, response.NeighbourhoodsCount);
+        Assert.Equal(neighbourhoods, response.Neighbourhoods);
     }
 
     [Fact]
@@ -72,14 +71,14 @@ public class LocationEndpointsTests
             locationRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetNeighbourhoodsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetNeighbourhoodsResponse>>(result);
+        var okResult = result as Ok<GetNeighbourhoodsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetNeighbourhoodsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.NeighbourhoodsCount.Should().Be(0);
-        response.Neighbourhoods.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response.NeighbourhoodsCount);
+        Assert.Empty(response.Neighbourhoods);
     }
 }

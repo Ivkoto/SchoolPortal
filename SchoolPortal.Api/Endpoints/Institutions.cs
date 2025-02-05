@@ -59,7 +59,6 @@ public class Institutions : IEndpoint
         var schoolYearValidationResult = schoolYearValidator.Validate(schoolYear);
         var gradeValidationResult = gradeValidator.Validate(grade);
 
-
         if (!schoolYearValidationResult.IsValid || !gradeValidationResult.IsValid)
         {
             var allErrors = schoolYearValidationResult.Errors.Concat(gradeValidationResult.Errors).ToList();

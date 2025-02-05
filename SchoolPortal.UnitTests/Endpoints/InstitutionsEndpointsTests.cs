@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Moq;
@@ -66,14 +65,15 @@ public class InstitutionsEndpointsTests
             institutionRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<InstitutionModel>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<InstitutionModel>>(result);
 
-        var responseInstitution = (result as Ok<InstitutionModel>)?.Value;
+        var okResult = result as Ok<InstitutionModel>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        responseInstitution.Should().NotBeNull();
-        responseInstitution!.InstitutionId.Should().Be(institutionId);
+        var responseInstitution = okResult?.Value;
+
+        Assert.NotNull(responseInstitution);
+        Assert.Equal(institutionId, responseInstitution.InstitutionId);
     }
 
     [Fact]
@@ -103,15 +103,15 @@ public class InstitutionsEndpointsTests
             institutionRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetFilteredProfilesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetFilteredProfilesResponse>>(result);
+        var okResult = result as Ok<GetFilteredProfilesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetFilteredProfilesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ProfilesCount.Should().Be(profiles.Count);
-        response.Profiles.Should().BeEquivalentTo(profiles);
+        Assert.NotNull(response);
+        Assert.Equal(profiles.Count, response.ProfilesCount);
+        Assert.Equal(profiles, response.Profiles);
     }
 
     [Fact]
@@ -136,15 +136,15 @@ public class InstitutionsEndpointsTests
             institutionRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetFilteredProfilesResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetFilteredProfilesResponse>>(result);
+        var okResult = result as Ok<GetFilteredProfilesResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetFilteredProfilesResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ProfilesCount.Should().Be(0);
-        response.Profiles.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response.ProfilesCount);
+        Assert.Empty(response.Profiles);
     }
 
     [Fact]
@@ -173,15 +173,15 @@ public class InstitutionsEndpointsTests
             institutionRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetExamResultsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetExamResultsResponse>>(result);
+        var okResult = result as Ok<GetExamResultsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetExamResultsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ExamResultsCount.Should().Be(examResults.Count);
-        response.ExamResults.Should().BeEquivalentTo(examResults);
+        Assert.NotNull(response);
+        Assert.Equal(examResults.Count, response.ExamResultsCount);
+        Assert.Equal(examResults, response.ExamResults); ;
     }
 
     [Fact]
@@ -206,14 +206,14 @@ public class InstitutionsEndpointsTests
             institutionRepositoryMock.Object);
 
         // Assert
-        result
-            .Should().BeOfType<Ok<GetExamResultsResponse>>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status200OK);
+        Assert.IsType<Ok<GetExamResultsResponse>>(result);
+        var okResult = result as Ok<GetExamResultsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
 
-        var response = (result as Ok<GetExamResultsResponse>)?.Value;
+        var response = okResult?.Value;
 
-        response.Should().NotBeNull();
-        response!.ExamResultsCount.Should().Be(0);
-        response.ExamResults.Should().BeEmpty();
+        Assert.NotNull(response);
+        Assert.Equal(0, response.ExamResultsCount);
+        Assert.Empty(response.ExamResults);
     }
 }
