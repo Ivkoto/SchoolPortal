@@ -122,5 +122,8 @@ BEGIN
 
     -- total pages
     SELECT @TotalPages AS TotalPages;
+
+    -- total items
+    SELECT @TotalItems AS TotalProfiles;
 END;
 GO

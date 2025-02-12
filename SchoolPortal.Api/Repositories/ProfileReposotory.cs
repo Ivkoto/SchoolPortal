@@ -7,7 +7,7 @@ namespace SchoolPortal.Api.Repositories;
 
 public interface IProfileRepository
 {
-    Task<(List<ProfileModel> Profiles, int TotalPages)> GetFilteredProfiles(GetFilteredProfilesRequest filters);
+    Task<(List<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters);
     Task<ProfileModel> GetProfileById(int profileId);
     Task<List<ScienceModel>> GetAllSciences();
     Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
@@ -27,7 +27,7 @@ public class ProfileRepository : IProfileRepository
         this.connectionFactory = connectionFactory;
     }
 
-    public async Task<(List<ProfileModel> Profiles, int TotalPages)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
+    public async Task<(List<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
     {
         var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
@@ -70,7 +70,9 @@ public class ProfileRepository : IProfileRepository
 
             int totalPages = await result.ReadFirstOrDefaultAsync<int>();
 
-            return (Profiles: profiles, TotalPages: totalPages);
+            int totalProfiles = await result.ReadFirstOrDefaultAsync<int>();
+
+            return (Profiles: profiles, TotalPages: totalPages, totalProfiles);
         }
     }
 

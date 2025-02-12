@@ -56,11 +56,12 @@ public static class StartupExtensions
     }
 
     private static void ConfigureSwager(WebApplication app)
-    {
+    {       
         app.UseSwagger();
-        app.UseSwaggerUI(s => s.SwaggerEndpoint("/swagger/v1/swagger.json", "SchoolPortal API v1"))
-           .UseHttpsRedirection()
-           .UseStaticFiles();
+        app.UseSwaggerUI(s =>
+        {
+            s.SwaggerEndpoint("/swagger/v1/swagger.json", "SchoolPortal API v1");
+        });
     }
 
     private static void ConfigureMiddlewares(WebApplication app)
