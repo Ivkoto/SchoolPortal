@@ -2,23 +2,68 @@
 <html>
 <head>
     <style>
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+        html, body {
+            margin: 0;
+            padding: 0;
         }
 
+        /* Container for the upper half image */
+        .upper-half {
+            height: 50vh; /* upper half of the viewport */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Styling for the centered Swagger link */
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .swagger-link {
+            font-size: 28px;
+            text-decoration: none;
+            color: #336699;
+        }
+
+        /* Swagger logo styling: aligned with text and sizing no more than twice the text size */
+        .swagger-logo {
+            height: 2em;         /* matches the current text size */
+            max-height: 4em;      /* ensures it doesn't exceed 2 times the text */
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* Fixed positioning for the bottom-right image */
+        .bottom-right {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+        
         img {
-            max-width: fit-content;
-            height: fit-content;
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="/developer.jpg" alt="DEV" />
+    <!-- Upper half image for SchoolPortal.png -->
+    <div class="upper-half">
+        <img src="/SchoolPortal.png" alt="School Portal" />
     </div>
+    
+    <!-- Swagger link centered below with logo -->
+    <div class="container">
+        <a class="swagger-link" href="/swagger/index.html" target="_blank">
+            <img class="swagger-logo" src="/swagger.png" alt="Swagger Logo" />View Swagger Documentation
+        </a>
+    </div>
+    
+    <!-- Bottom-right logo for Devocean.png -->
+    <img class="bottom-right" src="/Devocean.png" alt="Devocean Logo" />
 </body>
 </html>

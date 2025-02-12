@@ -19,9 +19,12 @@ builder.Services.TryAddSingleton<IHealthCheckPublisher, TelemetryHealthCheckPubl
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+app.UseHttpsRedirection();
+app.UseCors("AllowedOriginsPolicy");
+
 app.WebApplicationExtensions();
 app.UseEndpoints();
-app.UseCors("AllowedOriginsPolicy");
 
 app.MapHealthChecks("/api/v1/health", new HealthCheckOptions
 {
