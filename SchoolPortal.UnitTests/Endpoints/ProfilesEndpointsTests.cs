@@ -67,7 +67,7 @@ public class ProfilesEndpointsTests
 
         profileRepositoryMock
             .Setup(repo => repo.GetFilteredProfiles(request))
-            .ReturnsAsync((profilesResponse, TotalPages: 1));
+            .ReturnsAsync((profilesResponse, TotalPages: 1, TotalProfiles: 1));
 
         // Act
         var result = await profilesEndpoint.GetFilteredProfiles(
@@ -103,7 +103,7 @@ public class ProfilesEndpointsTests
 
         profileRepositoryMock
             .Setup(repo => repo.GetFilteredProfiles(request))
-            .ReturnsAsync((emptyProfilesResponse, TotalPages: 1));
+            .ReturnsAsync((emptyProfilesResponse, TotalPages: 1, TotalProfiles: 0));
 
         // Act
         var result = await profilesEndpoint.GetFilteredProfiles(

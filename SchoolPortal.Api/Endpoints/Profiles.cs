@@ -89,7 +89,7 @@ public class Profiles : IEndpoint
         return Results.Ok(
             new GetFilteredProfilesResponse
             {
-                ProfilesCount = profiles.Profiles.Count,
+                ProfilesCount = profiles.TotalProfiles,
                 Profiles = profiles.Profiles,
                 PageNumber = filters.PageNumber ?? 1,
                 PageSize = filters.PageSize ?? profiles.Profiles.Count,
