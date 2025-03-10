@@ -152,7 +152,7 @@ public class InstitutionsEndpointsTests
     {
         // Arrange
         var institutionId = 1;
-        var schoolYear = 2024;
+        var schoolYears = new int[] { 2023, 2024 };
         var grade = 7;
         var examResults = new List<ExamResultModel>
         {
@@ -161,14 +161,14 @@ public class InstitutionsEndpointsTests
         };
 
         institutionRepositoryMock
-            .Setup(repo => repo.GetInstitutionAverageSuccesses(institutionId, schoolYear, grade))
+            .Setup(repo => repo.GetInstitutionAverageSuccesses(institutionId, schoolYears, grade))
             .ReturnsAsync(examResults);
 
         // Act
         var result = await institutionsEndpoint.GetInstitutionAverageSuccesses(
             institutionId,
             httpContext,
-            schoolYear,
+            schoolYears,
             grade,
             institutionRepositoryMock.Object);
 
@@ -189,7 +189,7 @@ public class InstitutionsEndpointsTests
     {
         // Arrange
         var institutionId = 1;
-        var schoolYear = 2024;
+        var schoolYear = new int[] { 2023, 2024 };
         var grade = 7;
         var examResults = new List<ExamResultModel>();
 

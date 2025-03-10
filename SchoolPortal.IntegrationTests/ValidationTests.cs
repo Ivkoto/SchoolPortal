@@ -27,7 +27,7 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
     public async Task GetInstitutionProfiles_ReturnsBadRequestWithMessage_WhenQueryParametersAreOutOfRange()
     {
         // Arrange
-        var invalidSchoolYear = 2025;
+        var invalidSchoolYear = 2085;
         var invalidGrade = 6;
         var institutionExternalId = 634311;
         var institutionFullName = "Test Institution5";
@@ -50,7 +50,7 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
         var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(errorResponse);
         Assert.NotNull(errorResponse.Errors);
-        Assert.Contains("SchoolYear: Must be between 2010 and 2024, inclusive.", errorResponse.Errors);
+        Assert.Contains($"SchoolYear: Provided year ({invalidSchoolYear}) must be between 2010 and 2030, inclusive.", errorResponse.Errors);
         Assert.Contains("Grade: Must be one of the following: 4, 7, 10, 12", errorResponse.Errors);
     }
 
@@ -58,7 +58,7 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
     public async Task GetInstitutionAverageSuccesses_ReturnsBadRequestWithMessage_WhenQueryParametersAreOutOfRange()
     {
         // Arrange
-        var invalidSchoolYear = 2025;
+        var invalidSchoolYears = new[] { 2056, 2057 };
         var invalidGrade = 6;
         var institutionExternalId = 3214521;
         var institutionFullName = "Test Institution8";
@@ -71,7 +71,9 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
         var institutionId = await dataSeeder.SeedInstitution(institutionExternalId, institutionFullName, institutionShortName);
         var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
 
-        var queryParameters = $"schoolYear={invalidSchoolYear}&grade={invalidGrade}";
+        var queryParameters = string.Join("&",
+            invalidSchoolYears.Select(year => $"schoolYear={year}"))
+            + $"&grade={invalidGrade}";
 
         // Act
         var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
@@ -82,7 +84,12 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
         var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(errorResponse);
         Assert.NotNull(errorResponse.Errors);
-        Assert.Contains("SchoolYear: Must be between 2010 and 2024, inclusive.", errorResponse.Errors);
+
+        foreach (var invalidYear in invalidSchoolYears)
+        {
+            Assert.Contains($"SchoolYear: Provided year ({invalidYear}) must be between 2010 and 2030, inclusive.", errorResponse.Errors);
+        }
+
         Assert.Contains("Grade: Must be one of the following: 4, 7, 10, 12", errorResponse.Errors);
     }
 
@@ -90,7 +97,8 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
     public async Task GetFilteredProfiles_ReturnsBadRequestWithMessage_WhenRequestIsInvalid()
     {
         // Arrange
-        var invalidRequest = new GetFilteredProfilesRequest(2025, 6, null, null, null, null, null, null, null, null, 1, 10);
+        var ivnalidSchoolYear = 2075;
+        var invalidRequest = new GetFilteredProfilesRequest(ivnalidSchoolYear, 6, null, null, null, null, null, null, null, null, 1, 10);
 
         // Act
         var response = await httpClient.PostAsJsonAsync("/api/v1/profiles/lookup", invalidRequest);
@@ -101,7 +109,7 @@ public class ValidationTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAppl
         var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         Assert.NotNull(errorResponse);
         Assert.NotNull(errorResponse.Errors);
-        Assert.Contains("SchoolYear.SchoolYear: Must be between 2010 and 2024, inclusive.", errorResponse.Errors);
+        Assert.Contains($"SchoolYear.SchoolYear: Provided year ({ivnalidSchoolYear}) must be between 2010 and 2030, inclusive.", errorResponse.Errors);
         Assert.Contains("Settlement: Must be София", errorResponse.Errors);
         Assert.Contains("Grade.Grade: Must be one of the following: 4, 7, 10, 12", errorResponse.Errors);
     }

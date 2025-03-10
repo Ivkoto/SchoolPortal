@@ -79,7 +79,7 @@ public class Institutions : IEndpoint
     internal async Task<IResult> GetInstitutionAverageSuccesses(
         int institutionId,
         HttpContext httpContext,
-        [FromQuery] int schoolYear,
+        [FromQuery] int[] schoolYear,
         [FromQuery] int grade,
         [FromServices] IInstitutionRepository institutionRepository)
     {
@@ -88,7 +88,14 @@ public class Institutions : IEndpoint
         var schoolYearValidator = new SchoolYearValidator();
         var gradeValidator = new GradeValidator();
 
-        var schoolYearValidationResult = schoolYearValidator.Validate(schoolYear);
+        var schoolYearValidationResult = new FluentValidation.Results.ValidationResult();
+
+        foreach (var year in schoolYear)
+        {
+            var validationResult = schoolYearValidator.Validate(year);
+            schoolYearValidationResult.Errors.AddRange(validationResult.Errors);
+        }
+
         var gradeValidationResult = gradeValidator.Validate(grade);
 
         if (!schoolYearValidationResult.IsValid || !gradeValidationResult.IsValid)
