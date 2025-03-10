@@ -20,7 +20,7 @@ public class LocationRepository : ILocationRepository
 
     public async Task<List<NeighbourhoodModel>> GetNeighbourhoodsBySettlement(string settlement)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         return (await connection.QueryAsync<NeighbourhoodModel>(
                sql: "[Application].[usp_GetNeighbourhoodsBySettlement]",

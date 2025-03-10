@@ -29,7 +29,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<(List<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
 
         parameters.Add("@SchoolYear", filters.SchoolYear, DbType.Int32);
@@ -78,7 +78,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<ProfileModel> GetProfileById(int profileId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         var profile = await connection.QuerySingleOrDefaultAsync<ProfileModel>(
                       sql: "[Application].[usp_GetProfileById]",
@@ -90,7 +90,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<List<ScienceModel>> GetAllSciences()
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         return (await connection.QueryAsync<ScienceModel>(
                 sql: "[Application].[usp_GetAllSciences]",
@@ -100,7 +100,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         return(await connection.QueryAsync<ProfessionalDirectionModel>(
                sql: "[Application].[usp_GetProfessionalDirectionsByScienceId]",
@@ -111,7 +111,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         return(await connection.QueryAsync<ProfessionModel>(
                sql: "[Application].[usp_GetProfessionsByProfessionalDirectionId]",
@@ -122,7 +122,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         var parameters = new DynamicParameters();
 
@@ -138,7 +138,7 @@ public class ProfileRepository : IProfileRepository
 
     public async Task<List<ExamStageScoresModel>> GetAllExamStageScores(int profileId, int schoolYear)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         return(await connection.QueryAsync<ExamStageScoresModel> (
                sql: "[Application].[usp_GetExamStageScoresByProfileId]",
