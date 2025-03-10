@@ -19,7 +19,7 @@ public class DbHealthCheck : IHealthCheck
     {
         try
         {
-            using var connection = await dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+            await using var connection = await dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
             var result = await connection.ExecuteScalarAsync<int>("SELECT 1;");
 

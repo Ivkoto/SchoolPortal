@@ -23,7 +23,7 @@ public class InstitutionRepository : IInstitutionRepository
 
     public async Task<InstitutionModel> GetInstitutionById(int institutionId)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
 
         var institution = await connection.QuerySingleOrDefaultAsync<InstitutionModel>(
                           sql: "[Application].[usp_GetInstitutionById]",
@@ -35,7 +35,7 @@ public class InstitutionRepository : IInstitutionRepository
 
     public async Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
 
         parameters.Add("@InstitutionId", institutionId, DbType.Int32);
@@ -49,13 +49,21 @@ public class InstitutionRepository : IInstitutionRepository
         )).ToList();
     }
 
-    public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int schoolYear, int grade)
+    public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade)
     {
-        var connection = await connectionFactory.CreateConnectionAsync();
+        await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
 
+        var schoolYearsTable = new DataTable();
+        schoolYearsTable.Columns.Add("Year", typeof(int));
+
+        foreach (var year in schoolYears)
+        {
+            schoolYearsTable.Rows.Add(year);
+        }
+
         parameters.Add("@InstitutionId", institutionId, DbType.Int32);
-        parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
+        parameters.Add("@SchoolYears", schoolYearsTable.AsTableValuedParameter("Application.SchoolYearsList"));
         parameters.Add("@Grade", grade, DbType.Int32);
 
         return (await connection.QueryAsync<ExamResultModel>(
