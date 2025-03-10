@@ -94,7 +94,7 @@ public class ProfileRequestValidatorsTests
         // Assert
         Assert.False(result.IsValid);
         var error = Assert.Single(result.Errors);
-        Assert.Equal("Must be between 2010 and 2024, inclusive.", error.ErrorMessage);
+        Assert.Equal($"Provided year ({invalidSchoolYear}) must be between 2010 and 2030, inclusive.", error.ErrorMessage);
     }
 
     [Fact]

@@ -1,4 +1,3 @@
-
 # SchoolPortal API
 
 ## Overview
@@ -41,9 +40,10 @@ curl -X POST https://eduapi.azurewebsites.net/profiles/lookup \
       "professionalDirectionId": null,
       "scienceId": null
   }'
-  ```
+```
 
 ## Documentation
 
 - [API Documentation](docs/API.md) - Detailed information on the API endpoints, request/response formats, and more.
 - [Configuration](docs/CONFIGURATION.md) - Advanced configuration options (if applicable).
+- [Release Notes](RELEASE_NOTES.md) - Information on the latest releases, new features, improvements, and fixes.
