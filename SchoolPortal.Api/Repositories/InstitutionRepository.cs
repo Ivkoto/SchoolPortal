@@ -9,7 +9,7 @@ public interface IInstitutionRepository
 {
     Task<InstitutionModel> GetInstitutionById(int institutionId);
     Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
-    Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYear, int grade);
+    Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade);
 }
 
 public class InstitutionRepository : IInstitutionRepository
