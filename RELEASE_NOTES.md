@@ -1,3 +1,19 @@
+# Release v1.2.0
+
+## Overview
+
+This release enhances the project documentation and reinforces centralized package management. Documentation files have been updated for clarity and consistency, and the Directory.Packages.props now centrally defines all package versions.
+
+## New Features
+
+- Updated project documentation (API, Architecture, Configuration, and Contributing)
+- Centralized version definitions for NuGet packages
+
+## Improvements, Fixes & Technical Changes
+
+- Revised documentation content for improved clarity
+- No modifications to licensing terms
+
 # Release v1.1.0
 
 ## Overview
@@ -14,7 +30,7 @@ This release enhances the SchoolPortal API with support for multi-year data anal
 - Enhanced validation for arrays of school years including error messaging
 - Updated integration tests to verify multi-year query functionality
 
-# API Changes
+## API Changes
 
 - The **/api/v1/institutions/{institutionId}/average-successes** endpoint now accepts multiple schoolYear query parameters:
 
@@ -30,7 +46,7 @@ This release enhances the SchoolPortal API with support for multi-year data anal
 
 ## Overview
 
-This initial release introduces the SchoolPortal API, offering a comprehensive platform for accessing educational data. It provides core functionality for retreaving of data for school profiles and institutions, complemented by robust infrastructure components including health checks, telemetry, and advanced error handling.
+This initial release introduces the SchoolPortal API, offering a comprehensive platform for accessing educational data. It provides core functionality for retrieving data for school profiles and institutions, complemented by robust infrastructure components including health checks, telemetry, and advanced error handling.
 
 ## Core Features
 
