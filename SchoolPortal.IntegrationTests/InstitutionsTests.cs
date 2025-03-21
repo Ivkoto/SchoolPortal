@@ -22,7 +22,7 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
 
     public async Task InitializeAsync() => await dbFixture.ResetDatabaseAsync();
 
-    public Task DisposeAsync() =>  Task.CompletedTask;
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task GetInstitutionById_ReturnsInstitution_WhenInstitutionExists()
@@ -41,7 +41,7 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
 
         // Act
         var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}");
-        
+
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var institution = await response.Content.ReadFromJsonAsync<InstitutionModel>();
@@ -135,36 +135,51 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         Assert.Equal(0, profilesResponse.ProfilesCount);
         Assert.NotNull(profilesResponse.Profiles);
         Assert.Empty(profilesResponse.Profiles);
-    }    
+    }
 
     [Fact]
     public async Task GetInstitutionAverageSuccesses_ReturnsExamResults_WhenExamResultsExist()
     {
         // Arrange
-        var schoolYear = 2024;
+        var schoolYears = new[] { 2023, 2024 };
         var grade = 7;
         var subjectAbbreviationBEL = "БЕЛ";
         var subjectAbbreviationMAT = "MAT";
         var examAbbreviation = "НВО";
-        var candidateCountBEL = 64;
-        var averageScoreBEL = 59.17M;
-        var candidateCountMAT = 43;
-        var averageScoreMAT = 33.71M;
+
+        var yearData = new Dictionary<int, (int BelCount, decimal BelScore, int MatCount, decimal MatScore)>
+        {
+            { 2023, (64, 59.17M, 43, 33.71M) },
+            { 2024, (78, 62.43M, 56, 41.25M) }
+        };
+
         var settlement = "София";
         var neighbourhood = "Лозенец";
 
         var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
-        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
-        var institutionId = await dataSeeder.SeedInstitution(981265, "Test Institution6", "TI6");
+        var examAbbreviationId = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
+
+        var institutionId = await dataSeeder.SeedInstitution(4565, "Test Institution6", "TI6");
         var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
-        var examAbbreviation1Id = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
-        var subjectAbbreviation1Id = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviationBEL);
-        var subjectAbbreviation2Id = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviationMAT);
 
-        await dataSeeder.SeedExamResults(candidateCountBEL, averageScoreBEL, grade, subjectAbbreviation1Id, subInstitutionId, schoolYearId, examAbbreviation1Id);
-        await dataSeeder.SeedExamResults(candidateCountMAT, averageScoreMAT, grade, subjectAbbreviation2Id, subInstitutionId, schoolYearId, examAbbreviation1Id);
+        foreach (var year in schoolYears)
+        {
+            var schoolYearId = await dataSeeder.SeedSchoolYear(year);
+            var subjectAbbreviation1Id = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviationBEL);
+            var subjectAbbreviation2Id = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviationMAT);
 
-        var queryParameters = $"schoolYear={schoolYear}&grade={grade}";
+            var (belCount, belScore, matCount, matScore) = yearData[year];
+
+            await dataSeeder.SeedExamResults(
+                belCount, belScore, grade, subjectAbbreviation1Id,
+                subInstitutionId, schoolYearId, examAbbreviationId);
+
+            await dataSeeder.SeedExamResults(
+                matCount, matScore, grade, subjectAbbreviation2Id,
+                subInstitutionId, schoolYearId, examAbbreviationId);
+        }
+
+        var queryParameters = string.Join("&", schoolYears.Select(y => $"schoolYear={y}")) + $"&grade={grade}";
 
         // Act
         var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
@@ -176,47 +191,61 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         Assert.NotNull(examResultsResponse.ExamResults);
         Assert.NotEmpty(examResultsResponse.ExamResults);
 
-        Assert.Equal(2, examResultsResponse.ExamResults.Count);
+        Assert.Equal(4, examResultsResponse.ExamResults.Count);
+        Assert.Equal(4, examResultsResponse.ExamResultsCount);
 
         Assert.Contains(subjectAbbreviationBEL, examResultsResponse.ExamResults.Select(x => x.SubjectAbbreviation));
         Assert.Contains(subjectAbbreviationMAT, examResultsResponse.ExamResults.Select(x => x.SubjectAbbreviation));
+
+        Assert.Contains(schoolYears[0], examResultsResponse.ExamResults.Select(x => x.SchoolYear));
+        Assert.Contains(schoolYears[1], examResultsResponse.ExamResults.Select(x => x.SchoolYear));
 
         Assert.All(examResultsResponse.ExamResults, examResult =>
         {
             Assert.Equal(examAbbreviation, examResult.ExamAbbreviation);
             Assert.Equal(grade, examResult.Grade);
-            Assert.Equal(schoolYear, examResult.SchoolYear);
             Assert.Equal(subInstitutionId, examResult.InstitutionId);
         });
 
-        var belResult = examResultsResponse.ExamResults.FirstOrDefault(x => x.SubjectAbbreviation == subjectAbbreviationBEL);
-        var matResult = examResultsResponse.ExamResults.FirstOrDefault(x => x.SubjectAbbreviation == subjectAbbreviationMAT);
+        foreach (var year in schoolYears)
+        {
+            var (expectedBelCount, expectedBelScore, expectedMatCount, expectedMatScore) = yearData[year];
 
-        Assert.NotNull(belResult);
-        Assert.NotNull(matResult);
+            var belResultForYear = examResultsResponse.ExamResults.FirstOrDefault(x =>
+                x.SubjectAbbreviation == subjectAbbreviationBEL && x.SchoolYear == year);
+            var matResultForYear = examResultsResponse.ExamResults.FirstOrDefault(x =>
+                x.SubjectAbbreviation == subjectAbbreviationMAT && x.SchoolYear == year);
 
-        Assert.Equal(candidateCountBEL, belResult.CandidateCount);
-        Assert.Equal(averageScoreBEL, belResult.AverageScore);
-        Assert.Equal(candidateCountMAT, matResult.CandidateCount);
-        Assert.Equal(averageScoreMAT, matResult.AverageScore);
+            Assert.NotNull(belResultForYear);
+            Assert.NotNull(matResultForYear);
+
+            // Check year-specific values
+            Assert.Equal(expectedBelCount, belResultForYear.CandidateCount);
+            Assert.Equal(expectedBelScore, belResultForYear.AverageScore);
+            Assert.Equal(expectedMatCount, matResultForYear.CandidateCount);
+            Assert.Equal(expectedMatScore, matResultForYear.AverageScore);
+        }
     }
 
     [Fact]
     public async Task GetInstitutionAverageSuccesses_ReturnsEmptyCollection_WhenExamResultsDoNotExist()
     {
         // Arrange
-        var schoolYear = 2024;
+        var schoolYears = new[] { 2023, 2024 };
         var grade = 7;
         var settlement = "Софи";
         var neighbourhood = "Лозенец";
 
         var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
 
-        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
+        foreach (var year in schoolYears)
+        {
+            await dataSeeder.SeedSchoolYear(year);
+        }
         var institutionId = await dataSeeder.SeedInstitution(231261, "Test Institution7", "TI7");
         var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
 
-        var queryParameters = $"schoolYear={schoolYear}&grade={grade}";
+        var queryParameters = string.Join("&", schoolYears.Select(y => $"schoolYear={y}")) + $"&grade={grade}";
 
         // Act
         var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
@@ -229,5 +258,94 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         Assert.NotNull(examResultsResponse.ExamResults);
         Assert.Equal(0, examResultsResponse.ExamResultsCount);
         Assert.Empty(examResultsResponse.ExamResults);
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ValidatesAllYears_WhenSomeYearsAreInvalid()
+    {
+        // Arrange
+        var validYear = 2023;
+        var invalidYear = 3000;
+        var grade = 7;
+
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var institutionId = await dataSeeder.SeedInstitution(657485, "Test Institution12", "TI12");
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+        var schoolYearId = await dataSeeder.SeedSchoolYear(validYear);
+
+        var queryParameters = $"schoolYear={validYear}&schoolYear={invalidYear}&grade={grade}";
+
+        // Act
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(errorResponse);
+        Assert.NotNull(errorResponse.Errors);
+
+        Assert.Contains($"Provided year ({invalidYear}) must be between",
+                      errorResponse.Errors.First(e => e.Contains(invalidYear.ToString())));
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_HandlesMultipleYears_WhenRequestingManyYears()
+    {
+        // Arrange
+        var manyYears = Enumerable.Range(2019, 5).ToArray(); // 2019, 2020, 2021, 2022, 2023
+        var grade = 7;
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+        var examAbbreviation = "НВО";
+        var subjectAbbreviation = "БЕЛ";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var examAbbreviationId = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
+        var subjectAbbreviationId = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviation);
+        var institutionId = await dataSeeder.SeedInstitution(924513, "Test Institution Many Years", "TIMY");
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+
+        foreach (var (year, index) in manyYears.Select((y, i) => (y, i)))
+        {
+            var schoolYearId = await dataSeeder.SeedSchoolYear(year);
+            await dataSeeder.SeedExamResults(
+                50 + index,
+                60.0M + index,
+                grade,
+                subjectAbbreviationId,
+                subInstitutionId,
+                schoolYearId,
+                examAbbreviationId);
+        }
+
+        var queryParameters = string.Join("&", manyYears.Select(y => $"schoolYear={y}")) + $"&grade={grade}";
+
+        // Act
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var examResultsResponse = await response.Content.ReadFromJsonAsync<GetExamResultsResponse>();
+        Assert.NotNull(examResultsResponse);
+        Assert.Equal(manyYears.Length, examResultsResponse.ExamResultsCount);
+
+        foreach (var year in manyYears)
+        {
+            var yearResults = examResultsResponse.ExamResults.Where(r => r.SchoolYear == year);
+            Assert.NotEmpty(yearResults);
+        }
+
+        var orderedResults = examResultsResponse.ExamResults.OrderBy(r => r.SchoolYear).ToArray();
+        for (int i = 1; i < orderedResults.Length; i++)
+        {
+            Assert.True(orderedResults[i].AverageScore > orderedResults[i - 1].AverageScore,
+                "Average scores should increase with each year");
+            Assert.True(orderedResults[i].CandidateCount > orderedResults[i - 1].CandidateCount,
+                "Candidate counts should increase with each year");
+        }
     }
 }
