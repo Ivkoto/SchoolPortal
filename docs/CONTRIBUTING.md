@@ -1,5 +1,3 @@
-<!-- Release v1.2.0: Minor updates to contributing guidelines -->
-
 # Contributing to SchoolPortal API
 
 Thank you for considering contributing to SchoolPortal API! This document provides guidelines and instructions for contributing to the project.
@@ -13,26 +11,26 @@ This project is governed by the Devocean Solutions code of conduct. All contribu
 ### Branching Strategy
 
 - `main`: Production-ready code
-- `develop`: Integration branch for features
 - `feature/*`: Individual feature branches
 - `bugfix/*`: Bug fix branches
 - `release/*`: Release preparation branches
+- `db/*`: Database realated changes branch
 
 ### Pull Request Process
 
-1. Create a feature or bugfix branch from `develop`
+1. Create a new branch from `main`
 2. Implement your changes
 3. Write or update tests
 4. Update documentation as needed
-5. Submit a pull request to `develop`
+5. Submit a pull request in Azure
 6. Address any code review feedback
 
 ## Coding Standards
 
 ### C# Code Style
 
-- Follow Microsoft's C# coding conventions
-- Use meaningful variable and method names
+- Follow Microsoft's C# coding conventions: https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions
+- Use meaningful variable and method names _(e.g. use "userCount" instead of "x", use "calculateTotal()" instead of "doIt()")_
 - Add XML documentation comments for public APIs
 - Limit line length to 120 characters
 
@@ -68,7 +66,7 @@ Update documentation when making changes:
 
 ## Versioning
 
-We follow semantic versioning:
+We follow semantic versioning (see https://semver.org for details):
 
 - MAJOR version for incompatible API changes
 - MINOR version for new functionality in a backward compatible manner
@@ -84,4 +82,4 @@ If you need help with your contribution, you can:
 
 ## License
 
-By contributing to this project, you agree that your contributions will be licensed under the project's license.
+By contributing to this project, you agree that your contributions will be licensed under the [project's license](LICENSE.md).

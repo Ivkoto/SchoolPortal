@@ -1,5 +1,3 @@
-<!-- Release v1.2.0: Revised architecture documentation for enhanced clarity -->
-
 # SchoolPortal API Architecture
 
 ## Overview
