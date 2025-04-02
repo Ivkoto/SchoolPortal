@@ -1,5 +1,3 @@
-<!-- Release v1.2.0: Configuration guide updated with latest changes -->
-
 # SchoolPortal API Configuration Guide
 
 ## Overview

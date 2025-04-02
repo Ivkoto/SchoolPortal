@@ -1,5 +1,3 @@
-<!-- Release v1.2.0: Updated API documentation for improved clarity -->
-
 # SchoolPortal API Documentation
 
 ## Overview
@@ -407,13 +405,13 @@ This document provides documentation for the SchoolPortal API endpoints, request
 
 ```json
 {
-    "profilesCount": 5,
+  "profilesCount": 5,
     "profiles": [
-        {
-            "profileId": 255,
-            "profileName": "Example Profile",
-            ...
-        }
+      {
+        "profileId": 255,
+        "profileName": "Example Profile",
+        ...
+      }
     ]
 }
 ```
