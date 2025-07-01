@@ -8,8 +8,8 @@ namespace SchoolPortal.Api.Repositories;
 public interface IInstitutionRepository
 {
     Task<InstitutionModel> GetInstitutionById(int institutionId);
-    Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
-    Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade);
+    Task<IReadOnlyCollection<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
+    Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade);
 }
 
 public class InstitutionRepository : IInstitutionRepository
@@ -33,7 +33,7 @@ public class InstitutionRepository : IInstitutionRepository
         return institution ?? throw new KeyNotFoundException($"No Institution found with the ID {institutionId}");
     }
 
-    public async Task<List<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade)
+    public async Task<IReadOnlyCollection<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
@@ -49,7 +49,7 @@ public class InstitutionRepository : IInstitutionRepository
         )).ToList();
     }
 
-    public async Task<List<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade)
+    public async Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();

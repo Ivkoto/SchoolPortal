@@ -167,13 +167,15 @@ public class ProfilesEndpointsTests
             It.IsAny<ScienceModel>(),
             It.IsAny<ScienceModel>()
         };
+        
+        var schoolYear = 2024;
 
         profileRepositoryMock
-            .Setup(repo => repo.GetAllSciences())
+            .Setup(repo => repo.GetAllSciences(schoolYear))
             .ReturnsAsync(sciences);
 
         // Act
-        var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object);
+        var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object, schoolYear);
 
         // Assert
         Assert.IsType<Ok<GetSciencesResponse>>(result);
@@ -192,13 +194,14 @@ public class ProfilesEndpointsTests
     {
         // Arrange
         var sciences = new List<ScienceModel>();
+        var schoolYear = 2010;
 
         profileRepositoryMock
-            .Setup(repo => repo.GetAllSciences())
+            .Setup(repo => repo.GetAllSciences(schoolYear))
             .ReturnsAsync(sciences);
 
         // Act
-        var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object);
+        var result = await profilesEndpoint.GetSciences(httpContextMock.Object, profileRepositoryMock.Object, schoolYear);
 
         // Assert
         Assert.IsType<Ok<GetSciencesResponse>>(result);
@@ -350,7 +353,7 @@ public class ProfilesEndpointsTests
         var response = okResult?.Value;
 
         Assert.NotNull(response);
-        Assert.Equal(expectedSpecialties.Count, response!.SpecialtesCount);
+        Assert.Equal(expectedSpecialties.Count, response!.SpecialtiesCount);
         Assert.Equal(expectedSpecialties, response.Specialties);
     }
 
@@ -376,7 +379,7 @@ public class ProfilesEndpointsTests
         var response = okResult?.Value;
 
         Assert.NotNull(response);
-        Assert.Equal(0, response!.SpecialtesCount);
+        Assert.Equal(0, response!.SpecialtiesCount);
         Assert.Empty(response.Specialties);
     }
 

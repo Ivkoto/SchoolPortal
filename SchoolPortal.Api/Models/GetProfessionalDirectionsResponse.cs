@@ -3,7 +3,7 @@
 public record GetProfessionalDirectionsResponse
 {
     public int ProfessionalDirectionsCount { get; set; } = 0;
-    public List<ProfessionalDirectionModel> ProfessionalDirections { get; set; } = [];
+    public IReadOnlyCollection<ProfessionalDirectionModel> ProfessionalDirections { get; set; } = [];
 }
 
 public record ProfessionalDirectionModel

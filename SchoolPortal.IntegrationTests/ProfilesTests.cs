@@ -137,20 +137,22 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetSciences_ReturnsSciences_WhenSciencesExist()
     {
         // Arrange
-        var sciences = new List<(string Name, int ExternalId)>
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
+        var sciences = new List<(string Name, int ExternalId, int schoolYearId)>
         {
-            ("Изкуства", 21),
-            ("Информатика", 48),
-            ("Ветеринарна медицина", 64)
+            ("Изкуства", 21, schoolYearId),
+            ("Информатика", 48, schoolYearId),
+            ("Ветеринарна медицина", 64, schoolYearId)
         };
 
         foreach (var science in sciences)
         {
-            await dataSeeder.SeedScience(science.Name, science.ExternalId);
-        }        
+            await dataSeeder.SeedScience(science.Name, science.ExternalId, science.schoolYearId);
+        }
 
         // Act
-        var response = await httpClient.GetAsync("/api/v1/profiles/sciences");
+        var response = await httpClient.GetAsync($"/api/v1/profiles/sciences/{schoolYear}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -184,9 +186,11 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetProfessionalDirections_ReturnsProfessionalDirections_WhenProfessionalDirectionsExist()
     {
         // Arrange
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
         var science = (Name: "Информатика", ExternalId: 48);
         var professionalDirection = (Name: "Компютърни науки", ExternalId: 481);
-        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId);
+        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId, schoolYearId);
 
         await dataSeeder.SeedProfessionalDirection(professionalDirection.Name, professionalDirection.ExternalId, scienceId);
 
@@ -209,8 +213,10 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetProfessionalDirections_ReturnsEmptyCollection_WhenThereAreNoProfessionalDirections()
     {
         // Act
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
         var science = (Name: "Информатика", ExternalId: 48);
-        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId);
+        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId, schoolYearId);
 
         // Act
         var response = await httpClient.GetAsync($"/api/v1/profiles/professional-directions/{scienceId}");
@@ -229,11 +235,13 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetProfessions_ReturnsProfessions_WhenProfessionsExist()
     {
         // Arrange
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
         var science = (Name: "Информатика", ExternalId: 48);
-        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId);
+        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId,schoolYearId);
         var professionalDirection = (Name: "Компютърни науки", ExternalId: 481);
         var professionalDirectionId = await dataSeeder.SeedProfessionalDirection(professionalDirection.Name, professionalDirection.ExternalId, scienceId);
-        var profession = (Name: "Програмист", ExternalId: 481010);        
+        var profession = (Name: "Програмист", ExternalId: 481010);
         
         await dataSeeder.SeedProfession(profession.Name, profession.ExternalId, professionalDirectionId);
 
@@ -256,8 +264,10 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetProfessions_ReturnsEmptyCollection_WhenThereAreNoProfessions()
     {
         // Arrange
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
         var science = (Name: "Информатика", ExternalId: 48);
-        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId);
+        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId, schoolYearId);
         var professionalDirection = (Name: "Компютърни науки", ExternalId: 481);
         var professionalDirectionId = await dataSeeder.SeedProfessionalDirection(professionalDirection.Name, professionalDirection.ExternalId, scienceId);
         
@@ -278,8 +288,10 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
     public async Task GetSpecialties_ReturnsProfessionalSpecialties_WhenSpecialtiesExist()
     {
         // Arrange
+        var schoolYear = 2024;
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
         var science = (Name: "Информатика", ExternalId: 48);
-        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId);
+        var scienceId = await dataSeeder.SeedScience(science.Name, science.ExternalId,schoolYearId);
         var professionalDirection = (Name: "Компютърни науки", ExternalId: 481);
         var professionalDirectionId = await dataSeeder.SeedProfessionalDirection(professionalDirection.Name, professionalDirection.ExternalId, scienceId);
         var profession = (Name: "Програмист", ExternalId: 481010);
@@ -297,7 +309,7 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
         var specialtiesResponse = await response.Content.ReadFromJsonAsync<GetSpecialtiesResponse>();
         Assert.NotNull(specialtiesResponse);
         Assert.NotEmpty(specialtiesResponse.Specialties);
-        Assert.Equal(1, specialtiesResponse.SpecialtesCount);
+        Assert.Equal(1, specialtiesResponse.SpecialtiesCount);
         Assert.Contains(specialtiesResponse.Specialties, s => s.Name == specialty.Name);
         Assert.Contains(specialtiesResponse.Specialties, s => s.ExternalId == specialty.ExternalId);
         Assert.Contains(specialtiesResponse.Specialties, s => s.IsProfessional == specialty.IsProfessional);
@@ -321,7 +333,7 @@ public class ProfilesTests : IAsyncLifetime, IClassFixture<SchoolPortalApiApplic
         var specialtiesResponse = await response.Content.ReadFromJsonAsync<GetSpecialtiesResponse>();
         Assert.NotNull(specialtiesResponse);
         Assert.NotEmpty(specialtiesResponse.Specialties);
-        Assert.Equal(1, specialtiesResponse.SpecialtesCount);
+        Assert.Equal(1, specialtiesResponse.SpecialtiesCount);
         Assert.Contains(specialtiesResponse.Specialties, s => s.Name == specialty.Name);
         Assert.Contains(specialtiesResponse.Specialties, s => s.ExternalId == specialty.ExternalId);
         Assert.Contains(specialtiesResponse.Specialties, s => s.IsProfessional == specialty.IsProfessional);

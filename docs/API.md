@@ -165,11 +165,20 @@ This document provides documentation for the SchoolPortal API endpoints, request
 }
 ```
 
-### `GET /api/v1/profiles/sciences`
+### `GET /api/v1/profiles/sciences/{schoolYear?}`
 
-- **Description**: Get all available sciences
+- **Description**: Get all available sciences for a specific school year
 - **CORS**: AllowedOriginsPolicy
+- **Parameters**:
+  - `schoolYear` (optional): The school year to filter sciences by. If not provided, defaults to the current year.
 - **Response**: List of science objects
+
+**Examples**:
+
+```bash
+GET /api/v1/profiles/sciences/2024  # Get sciences for 2024
+GET /api/v1/profiles/sciences       # Get sciences for current year
+```
 
 ```json
 {
@@ -177,13 +186,15 @@ This document provides documentation for the SchoolPortal API endpoints, request
   "sciences": [
     {
       "id": 6,
-      "externalId": 48
+      "externalId": 48,
       "name": "Информатика",
+      "schoolYear": 2024
     },
     {
       "id": 7,
+      "externalId": 52,
       "name": "Техника",
-      "externalId": 52
+      "schoolYear": 2024
     },
     ...more sciences...
   ]

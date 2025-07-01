@@ -7,13 +7,13 @@ namespace SchoolPortal.Api.Repositories;
 
 public interface IProfileRepository
 {
-    Task<(List<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters);
+    Task<(IReadOnlyCollection<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters);
     Task<ProfileModel> GetProfileById(int profileId);
-    Task<List<ScienceModel>> GetAllSciences();
-    Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
-    Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId);
-    Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId);
-    Task<List<ExamStageScoresModel>> GetAllExamStageScores(int ProfileId, int SchoolYear);
+    Task<IReadOnlyCollection<ScienceModel>> GetAllSciences(int schoolYear);
+    Task<IReadOnlyCollection<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId);
+    Task<IReadOnlyCollection<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId);
+    Task<IReadOnlyCollection<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId);
+    Task<IReadOnlyCollection<ExamStageScoresModel>> GetAllExamStageScores(int ProfileId, int SchoolYear);
 }
 
 public class ProfileRepository : IProfileRepository
@@ -27,7 +27,7 @@ public class ProfileRepository : IProfileRepository
         this.connectionFactory = connectionFactory;
     }
 
-    public async Task<(List<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
+    public async Task<(IReadOnlyCollection<ProfileModel> Profiles, int TotalPages, int TotalProfiles)> GetFilteredProfiles(GetFilteredProfilesRequest filters)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
@@ -88,39 +88,40 @@ public class ProfileRepository : IProfileRepository
         return profile ?? throw new KeyNotFoundException($"No Profile found with the ID {profileId}");
     }
 
-    public async Task<List<ScienceModel>> GetAllSciences()
+    public async Task<IReadOnlyCollection<ScienceModel>> GetAllSciences(int schoolYear)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return (await connection.QueryAsync<ScienceModel>(
+        return [.. (await connection.QueryAsync<ScienceModel>(
                 sql: "[Application].[usp_GetAllSciences]",
+                param: new { schoolYear },
                 commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 
-    public async Task<List<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId)
+    public async Task<IReadOnlyCollection<ProfessionalDirectionModel>> GetProfessionalDirectionsByScienceId(int scienceId)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return(await connection.QueryAsync<ProfessionalDirectionModel>(
+        return [.. (await connection.QueryAsync<ProfessionalDirectionModel>(
                sql: "[Application].[usp_GetProfessionalDirectionsByScienceId]",
                param: new { ScienceId = scienceId},
                commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 
-    public async Task<List<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId)
+    public async Task<IReadOnlyCollection<ProfessionModel>> GetProfessionsByProfessionalDirectionId(int professionalDirectionId)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return(await connection.QueryAsync<ProfessionModel>(
+        return [.. (await connection.QueryAsync<ProfessionModel>(
                sql: "[Application].[usp_GetProfessionsByProfessionalDirectionId]",
                param: new { ProfessionalDirectionId = professionalDirectionId},
                commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 
-    public async Task<List<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId)
+    public async Task<IReadOnlyCollection<SpecialtyModel>> GetSpecialtiesByProfessionId(int professionId)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
@@ -129,21 +130,21 @@ public class ProfileRepository : IProfileRepository
         parameters.Add("@IsProfessional", professionId > 0 ? 1 : 0, DbType.Int32);
         parameters.Add("@ProfessionId", professionId > 0 ? professionId : (object)DBNull.Value, DbType.Int32);
 
-        return (await connection.QueryAsync<SpecialtyModel>(
+        return [.. (await connection.QueryAsync<SpecialtyModel>(
                 sql: "[Application].[usp_GetSpecialtiesByProfessionId]",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 
-    public async Task<List<ExamStageScoresModel>> GetAllExamStageScores(int profileId, int schoolYear)
+    public async Task<IReadOnlyCollection<ExamStageScoresModel>> GetAllExamStageScores(int profileId, int schoolYear)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return(await connection.QueryAsync<ExamStageScoresModel> (
+        return [.. (await connection.QueryAsync<ExamStageScoresModel> (
                sql: "[Application].[usp_GetExamStageScoresByProfileId]",
                param: new { ProfileId = profileId, SchoolYear = schoolYear },
                commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 }
