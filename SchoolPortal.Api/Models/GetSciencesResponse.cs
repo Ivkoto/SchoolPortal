@@ -11,5 +11,5 @@ public record ScienceModel
     int Id,
     int ExternalId,
     string Name,
-    int schoolYear
+    int SchoolYear
 );
