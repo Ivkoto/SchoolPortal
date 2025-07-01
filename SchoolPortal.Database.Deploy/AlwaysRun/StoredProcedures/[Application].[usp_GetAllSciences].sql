@@ -1,4 +1,5 @@
 CREATE OR ALTER PROC [Application].[usp_GetAllSciences]
+	@SchoolYear INT
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -6,8 +7,11 @@ BEGIN
 	SELECT
 		[Id],
 		[ExternalId],
-		[Name]
+		[Name],
+		[SchoolYear]
 	FROM 
 		[Application].[uv_Sciences]
+	WHERE
+		[SchoolYear] = @SchoolYear
 END;
 GO

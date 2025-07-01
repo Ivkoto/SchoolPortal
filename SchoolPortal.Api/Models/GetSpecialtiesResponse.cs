@@ -2,8 +2,8 @@
 
 public record GetSpecialtiesResponse
 {
-    public int SpecialtesCount { get; set; } = 0;
-    public List<SpecialtyModel> Specialties { get; set; } = [];
+    public int SpecialtiesCount { get; set; } = 0;
+    public IReadOnlyCollection<SpecialtyModel> Specialties { get; set; } = [];
 }
 
 public record SpecialtyModel

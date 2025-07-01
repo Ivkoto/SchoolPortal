@@ -12,9 +12,9 @@ This project is governed by the Devocean Solutions code of conduct. All contribu
 
 - `main`: Production-ready code
 - `feature/*`: Individual feature branches
-- `bugfix/*`: Bug fix branches
-- `release/*`: Release preparation branches
 - `db/*`: Database realated changes branch
+- `bug/*`: Bug fix branches
+- `fix/*`: Small fixes and refactoring branches
 
 ### Pull Request Process
 

@@ -21,7 +21,7 @@ public class Profiles : IEndpoint
             .Produces<ProfileModel>(StatusCodes.Status200OK)
             .RequireCors("AllowedOriginsPolicy");
 
-        app.MapGet("/api/v1/profiles/sciences", GetSciences)
+        app.MapGet("/api/v1/profiles/sciences/{schoolYear:int?}", GetSciences)
             .WithName("GetSciencesV1")
             .Produces<GetSciencesResponse>(StatusCodes.Status200OK)
             .RequireCors("AllowedOriginsPolicy");
@@ -110,13 +110,14 @@ public class Profiles : IEndpoint
         return Results.Ok(currentProfile);
     }
 
-    internal async Task<IResult> GetSciences(
+    internal async Task<IResult> GetSciences(        
         HttpContext httpContext,
-        [FromServices] IProfileRepository profilesRepository)
+        [FromServices] IProfileRepository profilesRepository,
+        int? schoolYear)
     {
         httpContext.Response.Headers["Deprecated"] = "False";
 
-        var sciences = await profilesRepository.GetAllSciences();
+        var sciences = await profilesRepository.GetAllSciences(schoolYear ?? DateTime.UtcNow.Year);
 
         return Results.Ok(
             new GetSciencesResponse
@@ -177,7 +178,7 @@ public class Profiles : IEndpoint
         return Results.Ok(
             new GetSpecialtiesResponse
             {
-                SpecialtesCount = specialties.Count,
+                SpecialtiesCount = specialties.Count,
                 Specialties = specialties
             }
         );

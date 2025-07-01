@@ -6,7 +6,7 @@ namespace SchoolPortal.Api.Repositories;
 
 public interface ILocationRepository
 {
-    Task<List<NeighbourhoodModel>> GetNeighbourhoodsBySettlement(string Settlement);
+    Task<IReadOnlyCollection<NeighbourhoodModel>> GetNeighbourhoodsBySettlement(string Settlement);
 }
 
 public class LocationRepository : ILocationRepository
@@ -18,14 +18,14 @@ public class LocationRepository : ILocationRepository
         this.connectionFactory = connectionFactory;
     }
 
-    public async Task<List<NeighbourhoodModel>> GetNeighbourhoodsBySettlement(string settlement)
+    public async Task<IReadOnlyCollection<NeighbourhoodModel>> GetNeighbourhoodsBySettlement(string settlement)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
 
-        return (await connection.QueryAsync<NeighbourhoodModel>(
+        return [.. (await connection.QueryAsync<NeighbourhoodModel>(
                sql: "[Application].[usp_GetNeighbourhoodsBySettlement]",
                param: new { settlement },
                commandType: System.Data.CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 }

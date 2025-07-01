@@ -12,3 +12,5 @@ packages/
 *.sln.cache
 *.user
 *.sql.design
+*.lutconfig
+/DeleteBinObjFolders.bat

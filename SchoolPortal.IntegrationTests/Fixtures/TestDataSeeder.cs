@@ -216,7 +216,7 @@ public class TestDataSeeder
         return (int)result;
     }
 
-    public async Task<int> SeedScience(string name, int externalId)
+    public async Task<int> SeedScience(string name, int externalId, int schoolYearId)
     {
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
@@ -224,14 +224,15 @@ public class TestDataSeeder
         var command = connection.CreateCommand();
 
         command.CommandText = @"
-            INSERT INTO [Application].[Science] (Name, ExternalId)
-            VALUES (@Name, @ExternalId);
+            INSERT INTO [Application].[Science] (Name, ExternalId, SchoolYearId)
+            VALUES (@Name, @ExternalId, @SchoolYearId);
             SELECT CAST(SCOPE_IDENTITY() as int);
         ";
 
         command.Parameters.Clear();
         command.Parameters.AddWithValue("@Name", name);
         command.Parameters.AddWithValue("@ExternalId", externalId);
+        command.Parameters.AddWithValue("@SchoolYearId", schoolYearId);
 
         var result = await command.ExecuteScalarAsync() ?? throw new InvalidOperationException("Failed to insert science.");
         return (int)result;

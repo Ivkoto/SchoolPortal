@@ -3,7 +3,7 @@
 public record GetExamStagesScoresResponse
 {
     public int StagesCount { get; set; } = 0;
-    public List<ExamStageScoresModel> ExamStageScores { get; set; } = [];
+    public IReadOnlyCollection<ExamStageScoresModel> ExamStageScores { get; set; } = [];
 }
 
 public record ExamStageScoresModel

@@ -14,7 +14,8 @@ SchoolPortal API provides a comprehensive system for accessing educational data 
 - **Institution Data**: Access information about educational institutions
 - **Exam Results**: Retrieve examination statistics and historical data
 - **Location-based Searches**: Find schools using geographic criteria
-- **Comprehensive Metadata**: Access categorized data about sciences, professions, specialties
+- **Comprehensive Metadata**: Access categorized data about sciences, professions, specialties with school year filtering
+- **School Year-Aware Data**: Retrieve sciences and related metadata filtered by specific school years
 - **Health Monitoring**: Built-in health check and monitoring endpoints
 
 ## Prerequisites
@@ -96,6 +97,16 @@ curl -X GET https://eduapi.azurewebsites.net/api/v1/institutions/123
 
 ```bash
 curl -X GET "https://eduapi.azurewebsites.net/api/v1/institutions/123/average-successes?schoolYear=2020&schoolYear=2021&schoolYear=2022&grade=7"
+```
+
+#### Get Sciences for Specific School Year
+
+```bash
+# Get sciences for a specific year
+curl -X GET https://eduapi.azurewebsites.net/api/v1/profiles/sciences/2024
+
+# Get sciences for current year (default)
+curl -X GET https://eduapi.azurewebsites.net/api/v1/profiles/sciences
 ```
 
 ## Project Structure

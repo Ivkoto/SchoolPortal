@@ -58,6 +58,11 @@ stages:
     - job: DeployToDevAzureSqlDB
       steps:
 
+        - task: UseDotNet@2
+          displayName: Use dot net 9
+          inputs:
+            version: '9.x'
+
         - task: DownloadPipelineArtifact@2
           displayName: Download build artifact
           inputs:
@@ -87,6 +92,11 @@ stages:
     jobs:
     - job: DeployToProdAzureSqlDB
       steps:
+
+        - task: UseDotNet@2
+          displayName: Use dot net 9
+          inputs:
+            version: '9.x'
 
         - task: DownloadPipelineArtifact@2
           displayName: Download build artifact

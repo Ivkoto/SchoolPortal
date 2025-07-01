@@ -6,5 +6,5 @@ public record GetFilteredProfilesResponse
     public int PageNumber { get; set; }
     public int PageSize { get; set; }
     public int TotalPages { get; set; }
-    public List<ProfileModel> Profiles { get; set; } = [];
+    public IReadOnlyCollection<ProfileModel> Profiles { get; set; } = [];
 }

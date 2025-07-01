@@ -3,7 +3,7 @@
 public record GetExamResultsResponse
 {
     public int ExamResultsCount { get; set; } = 0;
-    public List<ExamResultModel> ExamResults { get; set; } = [];
+    public IReadOnlyCollection<ExamResultModel> ExamResults { get; set; } = [];
 }
 
 public record ExamResultModel

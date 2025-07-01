@@ -1,3 +1,43 @@
+# Release v1.3.0
+
+## Overview
+
+This release introduces school year-aware science data retrieval and implements code quality improvements across the API. The GetSciences endpoint now supports filtering by school year, introducing a celan state of the Sciences, Professional Directions, Professions, Specialties for the current year or selected year - all these because we can face a different External IDs that come from MON for the same Sciences or Professional Directions, etc. every year. Minor refactoring has been applied to improve encapsulation and modernize collection handling throughout the codebase.
+
+## New Features
+
+- Enhanced GetSciences endpoint with school year filtering support
+- Added school year parameter to sciences data model and database schema
+- Implemented optional school year parameter with automatic fallback to current year
+
+## Improvements, Fixes & Technical Changes
+
+- **Code Quality**: Replaced `List<T>` with `IReadOnlyCollection<T>` across all response models for better encapsulation
+- **Modern C#**: Migrated from `.ToList()` to collection expressions for improved performance and readability
+- **Database Schema**: Added SchoolYearId foreign key relationship to Science table
+- **API Enhancement**: GetSciences endpoint now accepts optional school year parameter
+- **Test Coverage**: Updated unit and integration tests to support new school year functionality
+- **Repository Pattern**: Enhanced repository methods to support school year-based queries
+
+## API Changes
+
+- The **/api/v1/profiles/sciences/{schoolYear}** endpoint now accepts an optional school year parameter:
+
+```
+  GET /api/v1/profiles/sciences/2024  # Get sciences for specific year
+  GET /api/v1/profiles/sciences       # Get sciences for current year (default)
+```
+
+## Database Changes
+
+- Added `SchoolYearId` column to `[Application].[Science]` table
+- Updated `[Application].[uv_Sciences]` view to include school year information
+- Modified `[Application].[usp_GetAllSciences]` stored procedure to filter by school year
+
+<div style="margin: 24px 0; padding: 8px 0;">
+    <hr style="height: 3px; background-color:rgb(21, 57, 156); border: none;">
+</div>
+
 # Release v1.2.0
 
 ## Overview
