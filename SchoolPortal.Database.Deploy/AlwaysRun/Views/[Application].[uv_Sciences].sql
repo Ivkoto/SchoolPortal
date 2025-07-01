@@ -6,5 +6,5 @@ SELECT
 	syr.[Year] as SchoolYear
 FROM
 			[Application].[Science]		as sci
-INNER JOIN	[Application].[SchoolYear]	as syr ON sci.SchoolYearId = syr.Id;
+LEFT JOIN	[Application].[SchoolYear]	as syr ON sci.SchoolYearId = syr.Id;
 GO

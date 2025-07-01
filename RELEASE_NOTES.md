@@ -2,7 +2,7 @@
 
 ## Overview
 
-This release introduces school year-aware science data retrieval and implements code quality improvements across the API. The GetSciences endpoint now supports filtering by school year, introducing a celan state of the Sciences, Professional Directions, Professions, Specialties for the current year or selected year - all these because we can face a different External IDs that come from MON for the same Sciences or Professional Directions, etc. every year. Minor refactoring has been applied to improve encapsulation and modernize collection handling throughout the codebase.
+This release introduces school year-aware science data retrieval and implements code quality improvements across the API. The GetSciences endpoint now supports filtering by school year, introducing a clean state of the Sciences, Professional Directions, Professions, Specialties for the current year or selected year - all these because we can face a different External IDs that come from MON for the same Sciences or Professional Directions, etc. every year. Minor refactoring has been applied to improve encapsulation and modernize collection handling throughout the codebase.
 
 ## New Features
 
