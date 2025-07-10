@@ -56,7 +56,34 @@ SchoolPortal API provides a comprehensive system for accessing educational data 
    dotnet run
    ```
 
-6. Access the API at `https://localhost:7154` or `http://localhost:5154`.
+6. Access the API:
+   - **HTTP**: `http://localhost:5141`
+   - **HTTPS**: `https://localhost:7154` (when running from Visual Studio)
+   - **Swagger Documentation**: Available at `/swagger` endpoint on either URL
+
+### Local Development
+
+#### Running with HTTP
+
+```bash
+dotnet run --project SchoolPortal.Api
+# Access at: http://localhost:5141/swagger
+```
+
+#### Running with HTTPS
+
+```bash
+dotnet run --project SchoolPortal.Api --urls=https://localhost:7154
+# Access at: https://localhost:7154/swagger
+```
+
+#### Development Certificate (for HTTPS)
+
+If you encounter HTTPS certificate issues:
+
+```bash
+dotnet dev-certs https --trust
+```
 
 ### Example Usage
 
@@ -130,7 +157,18 @@ curl -X GET https://eduapi.azurewebsites.net/api/v1/profiles/sciences
 2. Clone the repository and open in your preferred IDE.
 3. Create a local copy of `appsettings.Development.json` with your development settings.
 4. Run the database deployment project to set up your local database.
-5. Start the API project and navigate to `/swagger` for interactive API documentation.
+5. Start the API project:
+   - **Visual Studio**: Press F5 (uses HTTPS by default)
+   - **Command Line**: Use `dotnet run` for HTTP or `dotnet run --urls=https://localhost:7154` for HTTPS
+6. Navigate to `/swagger` for interactive API documentation:
+   - HTTP: `http://localhost:5141/swagger`
+   - HTTPS: `https://localhost:7154/swagger`
+
+### Troubleshooting
+
+- **Swagger rendering issues**: Clear browser cache, especially in Microsoft Edge
+- **HTTPS certificate errors**: Run `dotnet dev-certs https --trust`
+- **Port conflicts**: Modify ports in `Properties/launchSettings.json` if needed
 
 ## Running Tests
 

@@ -12,7 +12,7 @@
 		<PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
 		<PackageReference Include="Dapper" />
-		<PackageReference Include="FluentValidation.AspNetCore" />
+		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="Microsoft.Data.SqlClient" />
 		<PackageReference Include="OpenTelemetry" />
 		<PackageReference Include="OpenTelemetry.Exporter.Console" />

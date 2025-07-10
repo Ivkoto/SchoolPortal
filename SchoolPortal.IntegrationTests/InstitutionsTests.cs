@@ -137,6 +137,97 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         Assert.Empty(profilesResponse.Profiles);
     }
 
+    /// <summary>
+    /// This test specifically targets the parameter binding.
+    /// The test runs the same endpoint multiple times to ensure consistent behavior with parameter mapping.
+    /// </summary>
+    [Fact]
+    public async Task GetInstitutionProfiles_ConsistentBehavior_WhenRunMultipleTimes()
+    {
+        // Arrange
+        var schoolYear = 2024;
+        var grade = 7;
+        var institutionExternalId = 999999;
+        var institutionFullName = "Parameter Test Institution";
+        var institutionShortName = "PTI";
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var institutionId = await dataSeeder.SeedInstitution(institutionExternalId, institutionFullName, institutionShortName);
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+        
+        var queryParameters = $"schoolYear={schoolYear}&grade={grade}";
+
+        // Act & Assert - Run the same request multiple times to ensure consistency
+        for (int i = 0; i < 5; i++)
+        {
+            var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/profiles?{queryParameters}");
+            
+            // This should consistently return OK status, not intermittent 500 errors
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var profilesResponse = await response.Content.ReadFromJsonAsync<GetFilteredProfilesResponse>();
+            Assert.NotNull(profilesResponse);
+            Assert.Equal(0, profilesResponse.ProfilesCount);
+            Assert.NotNull(profilesResponse.Profiles);
+            Assert.Empty(profilesResponse.Profiles);
+        }
+    }
+
+    /// <summary>
+    /// Test to verify that QueryMultipleAsync properly handles the stored procedure's multiple result sets
+    /// and works consistently even when run alongside other tests that use the same stored procedure.
+    /// </summary>
+    [Fact]
+    public async Task GetInstitutionProfiles_ProperMultipleResultSetHandling_WhenStoredProcedureReturnsThreeResultSets()
+    {
+        // Arrange
+        var schoolYear = 2024;
+        var grade = 7;
+        var institutionExternalId = 888888;
+        var institutionFullName = "MultiResultSet Test Institution";
+        var institutionShortName = "MRSTI";
+        var profileName = "MultiResultSet Test Profile";
+        var profileType = "професионална";
+        var profileExternalId = 777777;
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var institutionId = await dataSeeder.SeedInstitution(institutionExternalId, institutionFullName, institutionShortName);
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+        var profileId = await dataSeeder.SeedProfile(profileName, profileType, grade, subInstitutionId);
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYear);
+
+        await dataSeeder.SeedProfileDetails(profileExternalId, profileId, schoolYearId);
+
+        var queryParameters = $"schoolYear={schoolYear}&grade={grade}";
+
+        // Act
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/profiles?{queryParameters}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var profilesResponse = await response.Content.ReadFromJsonAsync<GetFilteredProfilesResponse>();
+        Assert.NotNull(profilesResponse);
+        Assert.NotNull(profilesResponse.Profiles);
+        Assert.NotEmpty(profilesResponse.Profiles);
+
+        // Verify that we get the expected profile back
+        var profile = profilesResponse.Profiles.First();
+        Assert.Equal(profileName, profile.ProfileName);
+        Assert.Equal(profileType, profile.ProfileType);
+        Assert.Equal(grade, profile.Grade);
+        Assert.Equal(subInstitutionId, profile.InstitutionId);
+        Assert.Equal(schoolYear, profile.SchoolYear);
+        
+        // Ensure the ProfilesCount is correctly set (this should come from the API, not the stored procedure's result sets)
+        Assert.Equal(1, profilesResponse.ProfilesCount);
+        Assert.Equal(profilesResponse.Profiles.Count, profilesResponse.ProfilesCount);
+    }
+
     [Fact]
     public async Task GetInstitutionAverageSuccesses_ReturnsExamResults_WhenExamResultsExist()
     {
