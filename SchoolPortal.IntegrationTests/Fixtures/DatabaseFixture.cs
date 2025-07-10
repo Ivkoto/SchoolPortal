@@ -20,7 +20,7 @@ public class DatabaseFixture : IDisposable
             .AddEnvironmentVariables()
             .Build();
 
-        ConnectionString = configuration.GetConnectionString("DatabaseConnection");
+        ConnectionString = configuration.GetConnectionString("DatabaseConnection")!;
 
         EnsureDatabase.For.SqlDatabase(ConnectionString);
 

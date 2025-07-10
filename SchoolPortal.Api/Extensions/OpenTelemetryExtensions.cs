@@ -11,7 +11,7 @@ public static class OpenTelemetryExtensions
 {
     public static void AddOpenTelemetry(this IServiceCollection services, IConfiguration configuration, string? environmentName)
     {
-        var openTelemtryEndpoint = configuration["OpenTelemetry:SigNozEndpoint"];
+        var openTelemetryEndpoint = configuration["OpenTelemetry:SigNozEndpoint"];
 
         var resourceBuilder = ResourceBuilder
             .CreateDefault()
@@ -42,7 +42,7 @@ public static class OpenTelemetryExtensions
                     .AddSqlClientInstrumentation()
                     .AddOtlpExporter(otpOptions =>
                     {
-                        otpOptions.Endpoint = new Uri(openTelemtryEndpoint!);
+                        otpOptions.Endpoint = new Uri(openTelemetryEndpoint!);
                         otpOptions.Protocol = OtlpExportProtocol.Grpc;
                     });
             })
@@ -56,7 +56,7 @@ public static class OpenTelemetryExtensions
                     .AddRuntimeInstrumentation()
                     .AddOtlpExporter(otpOptions =>
                     {
-                        otpOptions.Endpoint = new Uri(openTelemtryEndpoint!);
+                        otpOptions.Endpoint = new Uri(openTelemetryEndpoint!);
                         otpOptions.Protocol = OtlpExportProtocol.Grpc;
                     });
             });
@@ -75,7 +75,7 @@ public static class OpenTelemetryExtensions
 
                     options.AddOtlpExporter(otpOptions =>
                     {
-                        otpOptions.Endpoint = new Uri(openTelemtryEndpoint!);
+                        otpOptions.Endpoint = new Uri(openTelemetryEndpoint!);
                         otpOptions.Protocol = OtlpExportProtocol.Grpc;
                     });
                 });

@@ -54,7 +54,6 @@ public class ProfileValidator : AbstractValidator<GetFilteredProfilesRequest>
     {
         public SchoolYearValidator()
         {
-            //TODO @IvayloK - Increase the max range of the year to 2030 for example.
             RuleFor(x => x)
                 .InclusiveBetween(2010, 2030)
                 .WithMessage(year => $"Provided year ({year}) must be between 2010 and 2030, inclusive.")

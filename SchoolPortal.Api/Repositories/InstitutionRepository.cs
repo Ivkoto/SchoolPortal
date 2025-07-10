@@ -38,15 +38,30 @@ public class InstitutionRepository : IInstitutionRepository
         await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
 
-        parameters.Add("@InstitutionId", institutionId, DbType.Int32);
         parameters.Add("@SchoolYear", schoolYear, DbType.Int32);
         parameters.Add("@Grade", grade, DbType.Int32);
+        parameters.Add("@Settlement", (object)DBNull.Value, DbType.String);
+        parameters.Add("@Neighbourhood", (object)DBNull.Value, DbType.String);
+        parameters.Add("@Latitude", (object)DBNull.Value, DbType.Decimal);
+        parameters.Add("@Longitude", (object)DBNull.Value, DbType.Decimal);
+        parameters.Add("@Radius", (object)DBNull.Value, DbType.Decimal);
+        parameters.Add("@IsProfessional", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@SpecialtyId", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@ProfessionId", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@ProfessionalDirectionId", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@ScienceId", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@InstitutionId", institutionId, DbType.Int32);
+        parameters.Add("@PageNumber", (object)DBNull.Value, DbType.Int32);
+        parameters.Add("@PageSize", (object)DBNull.Value, DbType.Int32);
 
-        return (await connection.QueryAsync<ProfileModel>(
+        using var result = await connection.QueryMultipleAsync(
                 sql: "[Application].[usp_GetFilteredProfiles]",
                 param: parameters,
-                commandType: CommandType.StoredProcedure
-        )).ToList();
+                commandType: CommandType.StoredProcedure);
+
+        var profiles = (await result.ReadAsync<ProfileModel>()).ToList();
+
+        return profiles;
     }
 
     public async Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade)
@@ -66,10 +81,10 @@ public class InstitutionRepository : IInstitutionRepository
         parameters.Add("@SchoolYears", schoolYearsTable.AsTableValuedParameter("Application.SchoolYearsList"));
         parameters.Add("@Grade", grade, DbType.Int32);
 
-        return (await connection.QueryAsync<ExamResultModel>(
+        return [.. (await connection.QueryAsync<ExamResultModel>(
                 sql: "[Application].[usp_GetExamResults]",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
-        )).ToList();
+        ))];
     }
 }

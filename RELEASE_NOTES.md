@@ -1,3 +1,51 @@
+# Release v1.4.0
+
+## Overview
+
+This release focuses on enhancing the development experience by resolving Swagger/OpenAPI compatibility issues and improving API documentation infrastructure. The primary improvement addresses protocol-specific (HTTP/HTTPS) rendering issues in Swagger UI, ensuring consistent API documentation access across different development environments and browsers.
+
+## New Features
+
+- Dynamic server URL detection for Swagger/OpenAPI documentation
+- Enhanced Swagger UI configuration with improved developer experience features
+- Protocol-agnostic OpenAPI specification generation
+
+## Improvements, Fixes & Technical Changes
+
+- **Swagger/OpenAPI**: Implemented dynamic server URL detection using PreSerializeFilters to resolve HTTPS/HTTP compatibility issues
+- **Developer Experience**: Enhanced Swagger UI with request duration display, try-it-out enabled by default
+- **CORS Configuration**: Added null-safety improvements with fallback to empty array for allowed origins
+- **Documentation**: Improved OpenAPI metadata with contact information and enhanced descriptions
+- **Package Updates**: Updated multiple NuGet packages to latest stable versions for improved performance and security
+
+## Package Updates
+
+### Major Updates
+
+- **Swashbuckle.AspNetCore**: 7.2.0 → 9.0.1 (major update with OpenAPI 3.0.4 support)
+- **Swashbuckle.AspNetCore.Annotations**: 7.2.0 → 9.0.1
+- **FluentValidation**: Changed from FluentValidation.AspNetCore 11.3.0 to FluentValidation 12.0.0
+
+### Minor Updates
+
+- **Microsoft.AspNetCore.Mvc.Testing**: 9.0.2 → 9.0.6
+- **Microsoft.Data.SqlClient**: 6.0.1 → 6.0.2
+- **Microsoft.Extensions.Configuration**: 9.0.2 → 9.0.6
+- **Microsoft.Extensions.Configuration.EnvironmentVariables**: 9.0.2 → 9.0.6
+- **Microsoft.Extensions.Configuration.Json**: 9.0.2 → 9.0.6
+- **Microsoft.NET.Test.Sdk**: 17.13.0 → 17.14.1
+- **OpenTelemetry** (all packages): 1.11.1 → 1.12.0
+- **Serilog.Sinks.Datadog.Logs**: 0.5.5 → 0.5.6
+- **xunit.runner.visualstudio**: 3.0.2 → 3.1.1
+
+## Technical Details
+
+- Added `PreSerializeFilters` to dynamically set server URLs based on current request context
+- Enhanced `SwaggerUIOptions` with developer-friendly defaults and improved configuration
+- Added null-safe CORS origin handling to prevent runtime exceptions
+- Updated NuGet packages to latest stable versions, including major Swashbuckle update for better OpenAPI 3.0.4 support
+- Migrated from FluentValidation.AspNetCore to standalone FluentValidation package for improved compatibility
+
 # Release v1.3.0
 
 ## Overview

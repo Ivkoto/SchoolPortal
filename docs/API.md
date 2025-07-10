@@ -640,7 +640,17 @@ Error codes:
 
 ### Swagger
 
-- **Description**: Interactive API documentation interface
-- **Links**:
-  - PROD: https://eduapi.azurewebsites.net/swagger/index.html
-  - DEV: https://eduapi-dev.azurewebsites.net/swagger/index.html
+- **Description**: Interactive API documentation interface with try-it-out functionality
+- **Production**: https://eduapi.azurewebsites.net/swagger/index.html
+- **Development**: https://eduapi-dev.azurewebsites.net/swagger/index.html
+- **Local Development**:
+  - HTTP: http://localhost:5141/swagger/index.html
+  - HTTPS: https://localhost:7154/swagger/index.html
+
+#### Local Development Notes
+
+- The API supports both HTTP and HTTPS protocols for local development
+- Swagger UI automatically detects and uses the correct server URL based on your current protocol
+- If experiencing rendering issues in Microsoft Edge, clear browser cache
+- Use `dotnet run` for HTTP or `dotnet run --urls=https://localhost:7154` for HTTPS
+- Development certificate may be required for HTTPS: `dotnet dev-certs https --trust`

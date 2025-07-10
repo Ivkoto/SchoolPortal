@@ -8,6 +8,38 @@ This project is governed by the Devocean Solutions code of conduct. All contribu
 
 ## Development Process
 
+### Local Development Setup
+
+#### Prerequisites
+
+- .NET 9.0 SDK
+- SQL Server (LocalDB, Express, or Full)
+- Visual Studio 2022 or VS Code
+
+#### Getting Started
+
+1. Clone the repository
+2. Configure the database connection in `appsettings.Development.json`
+3. Run database deployment: `dotnet run --project SchoolPortal.Database.Deploy`
+4. Start the API:
+   - **Visual Studio**: Press F5 (defaults to HTTPS)
+   - **Command Line HTTP**: `dotnet run --project SchoolPortal.Api`
+   - **Command Line HTTPS**: `dotnet run --project SchoolPortal.Api --urls=https://localhost:7154`
+
+#### API Documentation
+
+- **Swagger UI**: Available at `/swagger` endpoint
+- **Local URLs**:
+  - HTTP: http://localhost:5141/swagger
+  - HTTPS: https://localhost:7154/swagger
+- **Development Certificate**: Run `dotnet dev-certs https --trust` if needed for HTTPS
+
+#### Troubleshooting
+
+- **Swagger rendering issues**: Clear browser cache, especially in Microsoft Edge
+- **HTTPS certificate errors**: Ensure development certificate is trusted
+- **Database connection**: Verify connection string and SQL Server availability
+
 ### Branching Strategy
 
 - `main`: Production-ready code
