@@ -61,6 +61,10 @@ public class InstitutionRepository : IInstitutionRepository
 
         var profiles = (await result.ReadAsync<ProfileModel>()).ToList();
 
+        // Read and consume the remaining result sets to avoid connection issues & to keep the connection clean
+        await result.ReadFirstOrDefaultAsync<int>(); // Read TotalPages (2nd result set)
+        await result.ReadFirstOrDefaultAsync<int>(); // Read TotalProfiles (3rd result set)
+
         return profiles;
     }
 
