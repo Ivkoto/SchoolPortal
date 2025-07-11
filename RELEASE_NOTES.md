@@ -40,6 +40,16 @@ This release focuses on enhancing the development experience by resolving Swagge
 
 ## Technical Details
 
+### Swagger/OpenAPI Documentation URLs
+
+- **Production**: https://eduapi.azurewebsites.net/api-docs/index.html
+- **Development**: https://eduapi-dev.azurewebsites.net/swagger/index.html
+- **Local Development**:
+  - HTTP: http://localhost:5141/swagger/index.html
+  - HTTPS: https://localhost:7154/swagger/index.html
+
+> The Swagger UI route is now dynamic and protocol-agnostic. In production, it is available at `/api-docs/index.html` (configurable via `Swagger:ProductionRoute` in appsettings). In development, the default route is `/swagger/index.html`. The server URL in the OpenAPI spec is set dynamically based on the current request context, ensuring correct protocol (HTTP/HTTPS) and host.
+
 - Added `PreSerializeFilters` to dynamically set server URLs based on current request context
 - Enhanced `SwaggerUIOptions` with developer-friendly defaults and improved configuration
 - Added null-safe CORS origin handling to prevent runtime exceptions

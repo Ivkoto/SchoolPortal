@@ -638,19 +638,21 @@ Error codes:
 
 ## API Documentation
 
-### Swagger
+### Swagger & OpenAPI Documentation
 
-- **Description**: Interactive API documentation interface with try-it-out functionality
-- **Production**: https://eduapi.azurewebsites.net/swagger/index.html
+- **Description**: Interactive API documentation interface. The Swagger UI route is now dynamic and protocol-agnostic, adapting to the environment (development or production).
+
+- **Production**: https://eduapi.azurewebsites.net/api-docs/index.html
 - **Development**: https://eduapi-dev.azurewebsites.net/swagger/index.html
 - **Local Development**:
   - HTTP: http://localhost:5141/swagger/index.html
   - HTTPS: https://localhost:7154/swagger/index.html
 
-#### Local Development Notes
+#### Notes
 
-- The API supports both HTTP and HTTPS protocols for local development
-- Swagger UI automatically detects and uses the correct server URL based on your current protocol
-- If experiencing rendering issues in Microsoft Edge, clear browser cache
-- Use `dotnet run` for HTTP or `dotnet run --urls=https://localhost:7154` for HTTPS
-- Development certificate may be required for HTTPS: `dotnet dev-certs https --trust`
+- In production, the Swagger UI is available at `/api-docs/index.html` (configurable via `Swagger:ProductionRoute` in appsettings).
+- In development, the default route is `/swagger/index.html`.
+- The server URL in the OpenAPI spec is set dynamically based on the current request context, ensuring correct protocol (HTTP/HTTPS) and host.
+- If experiencing rendering issues in Microsoft Edge, clear browser cache.
+- Use `dotnet run` for HTTP or `dotnet run --urls=https://localhost:7154` for HTTPS.
+- Development certificate may be required for HTTPS: `dotnet dev-certs https --trust`.
