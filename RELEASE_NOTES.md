@@ -1,3 +1,21 @@
+# Release v1.4.1
+
+## Overview
+
+This patch release updates the CORS configuration to include an additional allowed origin for improved cross-origin request support.
+
+## Improvements, Fixes & Technical Changes
+
+- **CORS Configuration**: Added new allowed origin `https://kandidatstvam.bg` to the CORS policy for enhanced cross-domain access support
+
+## Technical Details
+
+The following origin has been added to the allowed origins list:
+
+- `https://kandidatstvam.bg`
+
+This change enables the SchoolPortal API to accept cross-origin requests from the kandidatstvam.bg domain, maintaining the existing security policies including credential support and preflight caching.
+
 # Release v1.4.0
 
 ## Overview
