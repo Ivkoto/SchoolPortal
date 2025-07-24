@@ -55,16 +55,18 @@ public static class StartupExtensions
             options.AddPolicy("AllowedOriginsPolicy", policy =>
             {
                 policy.WithOrigins(allowedOrigins)
-                      .WithMethods("GET", "POST")
+                      .WithMethods("GET", "POST", "OPTIONS")
                       .AllowAnyHeader()
+                      .AllowCredentials()
                       .SetPreflightMaxAge(TimeSpan.FromHours(2));
             });
 
             options.AddPolicy("PaginationPolicy", policy =>
             {
                 policy.WithOrigins(allowedOrigins)
-                      .WithMethods("GET", "POST")
+                      .WithMethods("GET", "POST", "OPTIONS")
                       .AllowAnyHeader()
+                      .AllowCredentials()
                       .WithExposedHeaders("X-Pagination")
                       .SetPreflightMaxAge(TimeSpan.FromHours(2));
             });

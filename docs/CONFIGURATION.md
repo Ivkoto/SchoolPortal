@@ -28,7 +28,8 @@ The API uses the following configuration files:
   "AllowedOrigins": [
     "https://eduinfo.azurewebsites.net",
     "https://eduinfo-dev.azurewebsites.net",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://kandidatstvam.bg"
   ]
 }
 ```
