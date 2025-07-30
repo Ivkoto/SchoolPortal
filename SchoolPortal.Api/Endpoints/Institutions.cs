@@ -23,7 +23,7 @@ public class Institutions : IEndpoint
 
         app.MapGet("/api/v1/institutions/{institutionId:int}/average-successes", GetInstitutionAverageSuccesses)
             .WithName("GetInstitutionAverageSuccesses")
-            .Produces<GetFilteredProfilesResponse>(StatusCodes.Status200OK)
+            .Produces<GetExamResultsResponse>(StatusCodes.Status200OK)
             .RequireCors("AllowedOriginsPolicy");
     }
 
@@ -80,7 +80,7 @@ public class Institutions : IEndpoint
         int institutionId,
         HttpContext httpContext,
         [FromQuery] int[] schoolYear,
-        [FromQuery] int grade,
+        [FromQuery] int? grade,
         [FromServices] IInstitutionRepository institutionRepository)
     {
         httpContext.Response.Headers["Deprecated"] = "False";
@@ -88,20 +88,33 @@ public class Institutions : IEndpoint
         var schoolYearValidator = new SchoolYearValidator();
         var gradeValidator = new GradeValidator();
 
-        var schoolYearValidationResult = new FluentValidation.Results.ValidationResult();
+        var validationResults = new FluentValidation.Results.ValidationResult();
 
-        foreach (var year in schoolYear)
+        // Validate that schoolYear array is not empty or null
+        if (schoolYear == null || schoolYear.Length == 0)
         {
-            var validationResult = schoolYearValidator.Validate(year);
-            schoolYearValidationResult.Errors.AddRange(validationResult.Errors);
+            validationResults.Errors.Add(new FluentValidation.Results.ValidationFailure(
+                "schoolYear", "At least one school year must be provided."));
+        }
+        else
+        {
+            // Validate all school years using the same validator instance
+            foreach (var year in schoolYear)
+            {
+                var yearValidationResult = schoolYearValidator.Validate(year);
+                validationResults.Errors.AddRange(yearValidationResult.Errors);
+            }
         }
 
-        var gradeValidationResult = gradeValidator.Validate(grade);
-
-        if (!schoolYearValidationResult.IsValid || !gradeValidationResult.IsValid)
+        if (grade is not null)
         {
-            var allErrors = schoolYearValidationResult.Errors.Concat(gradeValidationResult.Errors).ToList();
-            throw new ValidationException(allErrors);
+            var gradeValidationResult = gradeValidator.Validate(grade.Value);
+            validationResults.Errors.AddRange(gradeValidationResult.Errors);
+        }
+
+        if (!validationResults.IsValid)
+        {
+            throw new ValidationException(validationResults.Errors);
         }
 
         var examResults = await institutionRepository.GetInstitutionAverageSuccesses(institutionId, schoolYear, grade);

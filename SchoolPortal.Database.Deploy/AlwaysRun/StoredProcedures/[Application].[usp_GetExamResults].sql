@@ -12,7 +12,7 @@ GO
 CREATE OR ALTER PROC [Application].[usp_GetExamResults]
     @InstitutionId	INT,
     @SchoolYears	[Application].[SchoolYearsList] READONLY,
-    @Grade			INT
+    @Grade			INT	= NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -31,8 +31,8 @@ BEGIN
 	FROM
 		[Application].[uv_ExamResults]
 	WHERE
-		[InstitutionId] = @InstitutionId AND
-		[SchoolYear] IN (SELECT [Year] FROM @SchoolYears) AND
-		[Grade] = @Grade
+			(InstitutionId = @InstitutionId)
+		AND (SchoolYear IN (SELECT [Year] FROM @SchoolYears))
+		AND (@Grade IS NULL OR [Grade] = @Grade )
 END;
 GO

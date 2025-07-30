@@ -9,7 +9,7 @@ public interface IInstitutionRepository
 {
     Task<InstitutionModel> GetInstitutionById(int institutionId);
     Task<IReadOnlyCollection<ProfileModel>> GetInstitutionProfiles(int institutionId, int schoolYear, int? grade);
-    Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade);
+    Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int? grade);
 }
 
 public class InstitutionRepository : IInstitutionRepository
@@ -68,7 +68,7 @@ public class InstitutionRepository : IInstitutionRepository
         return profiles;
     }
 
-    public async Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int grade)
+    public async Task<IReadOnlyCollection<ExamResultModel>> GetInstitutionAverageSuccesses(int institutionId, int[] schoolYears, int? grade)
     {
         await using var connection = await connectionFactory.CreateConnectionAsync();
         var parameters = new DynamicParameters();
@@ -83,7 +83,7 @@ public class InstitutionRepository : IInstitutionRepository
 
         parameters.Add("@InstitutionId", institutionId, DbType.Int32);
         parameters.Add("@SchoolYears", schoolYearsTable.AsTableValuedParameter("Application.SchoolYearsList"));
-        parameters.Add("@Grade", grade, DbType.Int32);
+        parameters.Add("@Grade", grade ?? (object)DBNull.Value, DbType.Int32);
 
         return [.. (await connection.QueryAsync<ExamResultModel>(
                 sql: "[Application].[usp_GetExamResults]",

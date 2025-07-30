@@ -1,3 +1,56 @@
+# Release v1.5.0
+
+## Overview
+
+This minor release enhances the institution average successes endpoint by making the grade parameter optional, allowing queries across all grades simultaneously. This improvement provides greater flexibility for analyzing exam results and enables comprehensive institutional performance comparisons.
+
+## New Features
+
+- **Optional Grade Parameter**: The `/api/v1/institutions/{institutionId}/average-successes` endpoint now accepts an optional grade parameter
+- **Enhanced Validation**: Improved validation logic for school year arrays with better error messaging
+
+## Improvements, Fixes & Technical Changes
+
+- **API Enhancement**: Made the `grade` parameter optional in the GetInstitutionAverageSuccesses endpoint
+- **Database Schema**: Updated stored procedure `[Application].[usp_GetExamResults]` to handle optional grade filtering with `@Grade INT = NULL`
+- **Repository Pattern**: Enhanced repository interface and implementation to support optional grade parameter
+- **Validation**: Added proper validation for empty or null school year arrays
+- **Type Safety**: Fixed return type mapping in endpoint configuration from `GetFilteredProfilesResponse` to `GetExamResultsResponse`
+- **Test Coverage**: Added comprehensive unit and integration tests for optional grade functionality
+- **Code Quality**: Improved .gitignore file organization and structure
+
+## API Changes
+
+The **GET /api/v1/institutions/{institutionId}/average-successes** endpoint now supports optional grade filtering:
+
+```bash
+# Get exam results for specific grade across multiple years
+GET /api/v1/institutions/256/average-successes?schoolYear=2022&schoolYear=2023&grade=7
+
+# Get exam results for ALL grades across multiple years (new functionality)
+GET /api/v1/institutions/256/average-successes?schoolYear=2022&schoolYear=2023
+```
+
+## Database Changes
+
+- Updated `[Application].[usp_GetExamResults]` stored procedure:
+  - Added default value `NULL` for `@Grade` parameter
+  - Modified WHERE clause to support optional grade filtering: `(@Grade IS NULL OR [Grade] = @Grade)`
+
+## Technical Details
+
+### Breaking Changes
+
+**None - this is a backward-compatible enhancement.**
+
+### Validation Rules
+
+- **School Year Array**: Must contain at least one valid school year (2010-2030)
+- **Grade Parameter**: Optional - when provided, must be one of: 4, 7, 10, 12
+- **Error Handling**: Enhanced error messages for array validation scenarios
+
+<br><br>
+
 # Release v1.4.1
 
 ## Overview
@@ -15,6 +68,8 @@ The following origin has been added to the allowed origins list:
 - `https://kandidatstvam.bg`
 
 This change enables the SchoolPortal API to accept cross-origin requests from the kandidatstvam.bg domain, maintaining the existing security policies including credential support and preflight caching.
+
+<br><br>
 
 # Release v1.4.0
 
@@ -74,6 +129,8 @@ This release focuses on enhancing the development experience by resolving Swagge
 - Updated NuGet packages to latest stable versions, including major Swashbuckle update for better OpenAPI 3.0.4 support
 - Migrated from FluentValidation.AspNetCore to standalone FluentValidation package for improved compatibility
 
+<br><br>
+
 # Release v1.3.0
 
 ## Overview
@@ -110,9 +167,7 @@ This release introduces school year-aware science data retrieval and implements 
 - Updated `[Application].[uv_Sciences]` view to include school year information
 - Modified `[Application].[usp_GetAllSciences]` stored procedure to filter by school year
 
-<div style="margin: 24px 0; padding: 8px 0;">
-    <hr style="height: 3px; background-color:rgb(21, 57, 156); border: none;">
-</div>
+<br><br>
 
 # Release v1.2.0
 
@@ -129,6 +184,8 @@ This release enhances the project documentation and reinforces centralized packa
 
 - Revised documentation content for improved clarity
 - No modifications to licensing terms
+
+<br><br>
 
 # Release v1.1.0
 
@@ -154,9 +211,7 @@ This release enhances the SchoolPortal API with support for multi-year data anal
   GET /api/v1/institutions/2546/average-successes?schoolYear=2020&schoolYear=2021&schoolYear=2022&grade=7
 ```
 
-<div style="margin: 24px 0; padding: 8px 0;">
-    <hr style="height: 3px; background-color:rgb(21, 57, 156); border: none;">
-</div>
+<br><br>
 
 # Release v1.0.0 - Initial Release
 

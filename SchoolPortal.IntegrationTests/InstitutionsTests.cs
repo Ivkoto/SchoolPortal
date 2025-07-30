@@ -379,7 +379,8 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         Assert.NotNull(errorResponse.Errors);
 
         Assert.Contains($"Provided year ({invalidYear}) must be between",
-                      errorResponse.Errors.First(e => e.Contains(invalidYear.ToString())));
+            errorResponse.Errors.First(e => e.Contains(invalidYear.ToString()))
+        );
     }
 
     [Fact]
@@ -402,6 +403,7 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
         foreach (var (year, index) in manyYears.Select((y, i) => (y, i)))
         {
             var schoolYearId = await dataSeeder.SeedSchoolYear(year);
+
             await dataSeeder.SeedExamResults(
                 50 + index,
                 60.0M + index,
@@ -409,7 +411,8 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
                 subjectAbbreviationId,
                 subInstitutionId,
                 schoolYearId,
-                examAbbreviationId);
+                examAbbreviationId
+            );
         }
 
         var queryParameters = string.Join("&", manyYears.Select(y => $"schoolYear={y}")) + $"&grade={grade}";
@@ -438,5 +441,197 @@ public class InstitutionsTests : IAsyncLifetime, IClassFixture<SchoolPortalApiAp
             Assert.True(orderedResults[i].CandidateCount > orderedResults[i - 1].CandidateCount,
                 "Candidate counts should increase with each year");
         }
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ReturnsBadRequest_WhenSchoolYearArrayIsEmpty()
+    {
+        // Arrange
+        var institutionId = 12345;
+
+        // Act - calling endpoint without any schoolYear parameters
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{institutionId}/average-successes");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(errorResponse);
+        Assert.NotNull(errorResponse.Errors);
+        Assert.Contains("At least one school year must be provided",
+            errorResponse.Errors.First(e => e.Contains("school year")));
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ReturnsAllGrades_WhenGradeParameterIsNotProvided()
+    {
+        // Arrange
+        var schoolYears = new[] { 2023, 2024 };
+        var grade7 = 7;
+        var grade10 = 10;
+        var subjectAbbreviationBEL = "БЕЛ";
+        var examAbbreviation = "НВО";
+
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var examAbbreviationId = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
+        var subjectAbbreviationId = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviationBEL);
+
+        var institutionId = await dataSeeder.SeedInstitution(12345, "Test Institution Optional Grade", "TIOG");
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+
+        // Seed data for multiple grades across multiple years
+        foreach (var year in schoolYears)
+        {
+            var schoolYearId = await dataSeeder.SeedSchoolYear(year);
+
+            await dataSeeder.SeedExamResults(
+                50, 65.5M, grade7, subjectAbbreviationId,
+                subInstitutionId, schoolYearId, examAbbreviationId);
+
+            await dataSeeder.SeedExamResults(
+                40, 72.3M, grade10, subjectAbbreviationId,
+                subInstitutionId, schoolYearId, examAbbreviationId);
+        }
+
+        var queryParameters = string.Join("&", schoolYears.Select(y => $"schoolYear={y}"));
+
+        // Act
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var examResultsResponse = await response.Content.ReadFromJsonAsync<GetExamResultsResponse>();
+        Assert.NotNull(examResultsResponse);
+        Assert.NotNull(examResultsResponse.ExamResults);
+        Assert.NotEmpty(examResultsResponse.ExamResults);
+
+        Assert.Equal(4, examResultsResponse.ExamResultsCount);
+        Assert.Equal(4, examResultsResponse.ExamResults.Count);
+
+        var grade7Results = examResultsResponse.ExamResults.Where(r => r.Grade == grade7);
+        var grade10Results = examResultsResponse.ExamResults.Where(r => r.Grade == grade10);
+
+        Assert.Equal(2, grade7Results.Count());
+        Assert.Equal(2, grade10Results.Count());
+
+        Assert.Contains(schoolYears[0], examResultsResponse.ExamResults.Select(x => x.SchoolYear));
+        Assert.Contains(schoolYears[1], examResultsResponse.ExamResults.Select(x => x.SchoolYear));
+
+        Assert.All(examResultsResponse.ExamResults, examResult =>
+        {
+            Assert.Equal(examAbbreviation, examResult.ExamAbbreviation);
+            Assert.Equal(subjectAbbreviationBEL, examResult.SubjectAbbreviation);
+            Assert.Equal(subInstitutionId, examResult.InstitutionId);
+            Assert.True(examResult.Grade == grade7 || examResult.Grade == grade10);
+        });
+    }    
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ReturnsResultsWithMixedGrades_WhenGradeParameterIsOptional()
+    {
+        // Arrange
+        var schoolYears = new[] { 2023 };
+        var grade4 = 4;
+        var grade7 = 7;
+        var grade12 = 12;
+        var subjectAbbreviation = "БЕЛ";
+        var examAbbreviation = "НВО";
+
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var examAbbreviationId = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
+        var subjectAbbreviationId = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviation);
+
+        var institutionId = await dataSeeder.SeedInstitution(98765, "Mixed Grades Institution", "MGI");
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYears[0]);
+
+        await dataSeeder.SeedExamResults(30, 55.0M, grade4, subjectAbbreviationId, subInstitutionId, schoolYearId, examAbbreviationId);
+        await dataSeeder.SeedExamResults(50, 65.0M, grade7, subjectAbbreviationId, subInstitutionId, schoolYearId, examAbbreviationId);
+        await dataSeeder.SeedExamResults(25, 75.0M, grade12, subjectAbbreviationId, subInstitutionId, schoolYearId, examAbbreviationId);
+
+        var queryParameters = string.Join("&", schoolYears.Select(y => $"schoolYear={y}"));
+
+        // Act - request without grade parameter to get all grades
+        var response = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{queryParameters}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var examResultsResponse = await response.Content.ReadFromJsonAsync<GetExamResultsResponse>();
+        Assert.NotNull(examResultsResponse);
+        Assert.Equal(3, examResultsResponse.ExamResultsCount);
+
+        var grades = examResultsResponse.ExamResults.Select(r => r.Grade).Distinct().OrderBy(g => g).ToArray();
+        Assert.Equal(new[] { grade4, grade7, grade12 }, grades);
+
+        var grade4Result = examResultsResponse.ExamResults.First(r => r.Grade == grade4);
+        var grade7Result = examResultsResponse.ExamResults.First(r => r.Grade == grade7);
+        var grade12Result = examResultsResponse.ExamResults.First(r => r.Grade == grade12);
+
+        Assert.Equal(55.0M, grade4Result.AverageScore);
+        Assert.Equal(65.0M, grade7Result.AverageScore);
+        Assert.Equal(75.0M, grade12Result.AverageScore);
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ComparesBehavior_WithAndWithoutGradeParameter()
+    {
+        // Arrange
+        var schoolYears = new[] { 2023 };
+        var targetGrade = 7;
+        var otherGrade = 10;
+        var subjectAbbreviation = "БЕЛ";
+        var examAbbreviation = "НВО";
+
+        var settlement = "София";
+        var neighbourhood = "Лозенец";
+
+        var addressId = await dataSeeder.SeedNeighbourhood(settlement, neighbourhood);
+        var examAbbreviationId = await dataSeeder.SeedExamAbbreviation(examAbbreviation);
+        var subjectAbbreviationId = await dataSeeder.SeedSubjectAbbreviation(subjectAbbreviation);
+
+        var institutionId = await dataSeeder.SeedInstitution(11111, "Comparison Test Institution", "CTI");
+        var subInstitutionId = await dataSeeder.SeedSubInstitution(institutionId, addressId);
+
+        var schoolYearId = await dataSeeder.SeedSchoolYear(schoolYears[0]);
+
+        await dataSeeder.SeedExamResults(40, 68.5M, targetGrade, subjectAbbreviationId, subInstitutionId, schoolYearId, examAbbreviationId);
+        await dataSeeder.SeedExamResults(35, 73.2M, otherGrade, subjectAbbreviationId, subInstitutionId, schoolYearId, examAbbreviationId);
+
+        var baseQuery = string.Join("&", schoolYears.Select(y => $"schoolYear={y}"));
+
+        // Act 1 - Request with specific grade
+        var responseWithGrade = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{baseQuery}&grade={targetGrade}");
+
+        // Act 2 - Request without grade (should return all grades)
+        var responseWithoutGrade = await httpClient.GetAsync($"/api/v1/institutions/{subInstitutionId}/average-successes?{baseQuery}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, responseWithGrade.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, responseWithoutGrade.StatusCode);
+
+        var resultsWithGrade = await responseWithGrade.Content.ReadFromJsonAsync<GetExamResultsResponse>();
+        var resultsWithoutGrade = await responseWithoutGrade.Content.ReadFromJsonAsync<GetExamResultsResponse>();
+
+        Assert.NotNull(resultsWithGrade);
+        Assert.NotNull(resultsWithoutGrade);
+
+        // With grade: should return only 1 result (specific grade)
+        Assert.Equal(1, resultsWithGrade.ExamResultsCount);
+        Assert.Equal(targetGrade, resultsWithGrade.ExamResults.First().Grade);
+        Assert.Equal(68.5M, resultsWithGrade.ExamResults.First().AverageScore);
+
+        // Without grade: should return 2 results (all grades)
+        Assert.Equal(2, resultsWithoutGrade.ExamResultsCount);
+        Assert.Contains(resultsWithoutGrade.ExamResults, r => r.Grade == targetGrade && r.AverageScore == 68.5M);
+        Assert.Contains(resultsWithoutGrade.ExamResults, r => r.Grade == otherGrade && r.AverageScore == 73.2M);
     }
 }

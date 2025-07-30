@@ -216,4 +216,93 @@ public class InstitutionsEndpointsTests
         Assert.Equal(0, response.ExamResultsCount);
         Assert.Empty(response.ExamResults);
     }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ReturnsOk_WhenGradeIsNull()
+    {
+        // Arrange
+        var institutionId = 1;
+        var schoolYears = new int[] { 2023, 2024 };
+        int? grade = null; // Testing optional grade functionality
+        var examResults = new List<ExamResultModel>
+        {
+            It.IsAny<ExamResultModel>(),
+            It.IsAny<ExamResultModel>()
+        };
+
+        institutionRepositoryMock
+            .Setup(repo => repo.GetInstitutionAverageSuccesses(institutionId, schoolYears, grade))
+            .ReturnsAsync(examResults);
+
+        // Act
+        var result = await institutionsEndpoint.GetInstitutionAverageSuccesses(
+            institutionId,
+            httpContext,
+            schoolYears,
+            grade,
+            institutionRepositoryMock.Object);
+
+        // Assert
+        Assert.IsType<Ok<GetExamResultsResponse>>(result);
+        var okResult = result as Ok<GetExamResultsResponse>;
+        Assert.Equal(StatusCodes.Status200OK, okResult?.StatusCode);
+
+        var response = okResult?.Value;
+
+        Assert.NotNull(response);
+        Assert.Equal(examResults.Count, response.ExamResultsCount);
+        Assert.Equal(examResults, response.ExamResults);
+        
+        // Verify repository was called with null grade
+        institutionRepositoryMock.Verify(
+            repo => repo.GetInstitutionAverageSuccesses(institutionId, schoolYears, null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ThrowsValidationException_WhenSchoolYearArrayIsEmpty()
+    {
+        // Arrange
+        var institutionId = 1;
+        var schoolYears = new int[] { };
+        int? grade = 7;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () =>
+            await institutionsEndpoint.GetInstitutionAverageSuccesses(
+                institutionId,
+                httpContext,
+                schoolYears,
+                grade,
+                institutionRepositoryMock.Object));
+
+        // Verify repository was never called due to validation failure
+        institutionRepositoryMock.Verify(
+            repo => repo.GetInstitutionAverageSuccesses(It.IsAny<int>(), It.IsAny<int[]>(), It.IsAny<int?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetInstitutionAverageSuccesses_ThrowsValidationException_WhenSchoolYearArrayIsNull()
+    {
+        // Arrange
+        var institutionId = 1;
+        int[] schoolYears = null!;
+        int? grade = 7;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(async ()
+            => await institutionsEndpoint.GetInstitutionAverageSuccesses(
+                institutionId,
+                httpContext,
+                schoolYears,
+                grade,
+                institutionRepositoryMock.Object)
+        );
+
+        // Verify repository was never called due to validation failure
+        institutionRepositoryMock.Verify(
+            repo => repo.GetInstitutionAverageSuccesses(It.IsAny<int>(), It.IsAny<int[]>(), It.IsAny<int?>()),
+            Times.Never);
+    }
 }

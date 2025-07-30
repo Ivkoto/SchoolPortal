@@ -438,8 +438,8 @@ GET /api/v1/profiles/sciences       # Get sciences for current year
 - **Path Parameters**:
   - `institutionId`: The unique identifier of the institution
 - **Query Parameters**:
-  - `schoolYear` (required, multiple): Academic year(s)
-  - `grade` (required): School grade
+  - `schoolYear` (required, multiple): Academic year(s) - At least one school year must be provided
+  - `grade` (optional): School grade - If not provided, returns results for all grades
 - **Response**: List of exam results with count
 
 ```json
@@ -475,12 +475,18 @@ GET /api/v1/profiles/sciences       # Get sciences for current year
 ```
 
 - **Validation Rules**:
-  - `schoolYear`: Each year must be between 2010 and 2030
-  - `grade`: Must be one of the following: 4, 7, 10, 12
-- **Example Query with Multiple Years**:
+  - `schoolYear`: Each year must be between 2010 and 2030, at least one school year must be provided
+  - `grade`: Must be one of the following: 4, 7, 10, 12 (optional parameter)
+- **Example Query with Multiple Years and Specific Grade**:
 
 ```
 GET /api/v1/institutions/256/average-successes?schoolYear=2022&schoolYear=2023&schoolYear=2024&grade=7
+```
+
+- **Example Query with Multiple Years for All Grades**:
+
+```
+GET /api/v1/institutions/256/average-successes?schoolYear=2022&schoolYear=2023&schoolYear=2024
 ```
 
 ```json
