@@ -123,7 +123,11 @@ curl -X GET https://eduapi.azurewebsites.net/api/v1/institutions/123
 #### Get Exam Results for Multiple Years
 
 ```bash
+# Get exam results for specific grade across multiple years
 curl -X GET "https://eduapi.azurewebsites.net/api/v1/institutions/123/average-successes?schoolYear=2020&schoolYear=2021&schoolYear=2022&grade=7"
+
+# Get exam results for ALL grades across multiple years
+curl -X GET "https://eduapi.azurewebsites.net/api/v1/institutions/123/average-successes?schoolYear=2020&schoolYear=2021&schoolYear=2022"
 ```
 
 #### Get Sciences for Specific School Year

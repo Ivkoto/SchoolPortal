@@ -1,16 +1,69 @@
+# ========================================
+# .NET Build Outputs
+# ========================================
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
 [Rr]elease/
 build/
+
+# ========================================
+# Package Management
+# ========================================
 packages/
-[Bb]in/
-[Oo]bj/
+
+# ========================================
+# IDE & Editor Files
+# ========================================
+# Visual Studio
 .vs/
+*.suo
+*.user
+
+# Visual Studio Code
 .vscode/
+
+# JetBrains Rider
+.idea/
+
+# ========================================
+# Temporary & System Files
+# ========================================
 *.tmp
 *.orig
-*.suo
-*.sln.cache
-*.user
+
+# Legacy/Obsolete
 *.sql.design
 *.lutconfig
 /DeleteBinObjFolders.bat
+
+# ========================================
+# Code Coverage & Testing
+# ========================================
+# Test Results
+TestResults/
+**/TestResults/
+
+# Coverage Reports
+CoverageReport/
+**/CoverageReport/
+coverage.cobertura.xml
+**/coverage.cobertura.xml
+*.coverage
+*.coveragexml
+
+# ========================================
+# SchoolPortal Configuration
+# ========================================
+# Environment-specific settings (may contain secrets)
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# ========================================
+# Operating System Files
+# ========================================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
