@@ -1,3 +1,53 @@
+# Release v1.5.1
+
+## Overview
+
+This patch release addresses a security vulnerability in the System.Runtime.Caching dependency and includes several package updates to maintain current security standards and compatibility.
+
+## Security Fixes
+
+- **Security Vulnerability Fix**: Resolved Denial of Service (DoS) vulnerability [SNYK-DOTNET-SYSTEMRUNTIMECACHING-8168846] in System.Runtime.Caching@8.0.0 by explicitly upgrading to version 8.0.1
+- **Dependency Chain**: Fixed vulnerability introduced through dbup-sqlserver@6.0.0 → Microsoft.Data.SqlClient@5.2.2 → System.Runtime.Caching@8.0.0
+
+## Package Updates
+
+### Security Updates
+
+- **System.Runtime.Caching**: Explicitly added version 8.0.1 to override vulnerable transitive dependency
+
+### Minor Updates
+
+- **Microsoft.AspNetCore.Mvc.Testing**: 9.0.6 → 9.0.7
+- **Microsoft.Data.SqlClient**: 6.0.2 → 6.1.0
+- **Microsoft.Extensions.Configuration**: 9.0.6 → 9.0.7
+- **Microsoft.Extensions.Configuration.EnvironmentVariables**: 9.0.6 → 9.0.7
+- **Microsoft.Extensions.Configuration.Json**: 9.0.6 → 9.0.7
+- **Swashbuckle.AspNetCore**: 9.0.1 → 9.0.3
+- **Swashbuckle.AspNetCore.Annotations**: 9.0.1 → 9.0.3
+- **xunit.runner.visualstudio**: 3.1.1 → 3.1.3
+
+## Technical Details
+
+### Security Vulnerability Resolution
+
+The System.Runtime.Caching vulnerability was resolved by:
+
+1. Adding an explicit package reference to System.Runtime.Caching@8.0.1 in Directory.Packages.props
+2. Including the package reference in projects using dbup-sqlserver (SchoolPortal.Database.Deploy and SchoolPortal.IntegrationTests)
+3. This approach overrides the vulnerable transitive dependency without requiring upstream package updates
+
+### Dependency Management
+
+- Maintained centralized package version management through Directory.Packages.props
+- All package updates are backward-compatible with no breaking changes
+- Build and test suite continue to pass successfully
+
+### Breaking Changes
+
+**None - this is a security and maintenance update with full backward compatibility.**
+
+<br><br>
+
 # Release v1.5.0
 
 ## Overview
