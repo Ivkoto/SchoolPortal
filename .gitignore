@@ -59,6 +59,9 @@ coverage.cobertura.xml
 **/appsettings.Development.json
 **/appsettings.Local.json
 
+# Local-only GitHub Copilot instructions
+.github/copilot-instructions.md
+
 # ========================================
 # Operating System Files
 # ========================================
