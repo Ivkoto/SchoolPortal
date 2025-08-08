@@ -1,6 +1,6 @@
 ---
 applyTo: "**"
-description: "This file provides guidelines for coding-style instructionswriting"
+description: "This file provides guidelines for coding-style instructions writing"
 ---
 
 ## Type Definitions:
