@@ -1,3 +1,49 @@
+# Release v1.6.0
+
+## Overview
+
+This minor release introduces significant database schema improvements focused on data normalization and relationship modeling for education types. The changes replace the previous denormalized structure with proper many-to-many relationships, improving data integrity and enabling more flexible querying of educational profiles by their associated education types and ownership models.
+
+## New Features
+
+- **Enhanced Education Type Modeling**: Introduced proper many-to-many relationships between education types and institutional ownership
+- **Profile-Education Type Associations**: Replaced single education type column with flexible many-to-many mapping for profile details
+- **Data Integrity Improvements**: Added proper foreign key constraints and unique constraints for data consistency
+
+## Database Schema Changes
+
+### New Tables
+
+- **`[Application].[EducationType_Ownership]`**: Many-to-many mapping table between education types and institution ownership types
+
+  - Enables flexible associations between education types (e.g., "дневна", "вечерна") and ownership models (e.g., "държавна", "общинска", "частна")
+  - Includes proper constraints and unique key enforcement
+
+- **`[Application].[ProfileDetails_EducationType]`**: Many-to-many mapping table between profile details and education types
+  - Replaces the previous `EducatingType` column with normalized relationship structure
+  - Allows profiles to be associated with multiple education types where applicable
+
+### Structural Improvements
+
+- **Schema Normalization**: Removed direct ownership reference from `EducationType` table in favor of mapping table approach
+- **Duplicate Cleanup**: Automated removal of duplicate education type records while preserving data relationships
+
+### View Updates
+
+- **`[Application].[uv_ProfileDetails]`**: Updated to use new many-to-many relationship structure
+  - Modified JOIN logic to properly retrieve education type information through mapping tables
+  - Maintains backward compatibility for existing API endpoints
+
+## Technical Details
+
+### Breaking Changes
+
+**None - this is a schema enhancement with full backward compatibility.**
+
+The API endpoints continue to function exactly as before, with the view layer abstracting the underlying schema improvements.
+
+<br><br>
+
 # Release v1.5.1
 
 ## Overview
