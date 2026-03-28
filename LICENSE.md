@@ -1,16 +1,11 @@
 ## License and Copyright Notice
+**Copyright (c) 2026 Devocean Solution. All rights reserved.**
 
-**This project is proprietary software. All rights reserved by Devocean Solution. Unauthorized use is prohibited.**
+**This project is proprietary software.**
 
-All code and assets in this repository are the exclusive property of **[Devocean Solution](https://devocean.services/)**.
+All source code, assets, and related materials in this repository are the exclusive property of **[Devocean Solutions](https://devocean.services/)**. No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, sell, or integrate any part of this repository into other projects or products without prior written consent from Devocean Solution.
 
-Permission is required from **[Devocean Solution](https://devocean.services/)** for any form of usage, including but not limited to:
-
-- Personal or commercial use
-- Distribution or modification
-- Integration with any other projects or products
-
-Without explicit written consent from **[Devocean Solution](https://devocean.services/)**, this code **CANNOT** be USED, COPIED, DISTRIBUTED, or MODIFIED in any form, free or otherwise. Unauthorized use of this repository is prohibited and may result in legal action.
+Unauthorized use of this repository or any of its contents is strictly prohibited and may result in legal action.
 
 For licensing inquiries, please contact Devocean Solutions directly through our website at:
 
