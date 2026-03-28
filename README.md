@@ -6,7 +6,14 @@ SchoolPortal API provides a comprehensive system for accessing educational data 
 
 ## License
 
-**This project is licensed under the Devocean Solutions License - see the [LICENSE.md](LICENSE.md) file for details.**
+This project is proprietary software. All rights reserved by Devocean Solution.
+
+No permission is granted to use, copy, modify, distribute, or integrate any part of this repository without prior written consent.
+
+For licensing inquiries, visit:
+[devocean.services](https://devocean.services/)
+
+**Ssee the [LICENSE.md](LICENSE.md) file for details.**
 
 ## Features
 
